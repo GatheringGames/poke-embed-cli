@@ -179,6 +179,24 @@
       return "$";
     };
 
+    const aggregate = (data, intervalDays) => {
+      const result = [];
+      for (let i = 0; i < data.length; i += intervalDays) {
+        const slice = data.slice(i, i + intervalDays);
+        const avg = slice.reduce((sum, val) => sum + val, 0) / slice.length;
+        result.push(avg);
+      }
+      return result;
+    };
+
+    const aggregateDates = (dates, intervalDays) => {
+      const result = [];
+      for (let i = 0; i < dates.length; i += intervalDays) {
+        result.push(dates[i]);
+      }
+      return result;
+    };
+
     let chart = new Chart(ctx, {
       type: "line",
       data: {
@@ -200,9 +218,22 @@
         container.querySelector(".poke-range-buttons .active").classList.remove("active");
         btn.classList.add("active");
         const range = parseInt(btn.dataset.range);
-        const converted = getConvertedPrices(currentCurrency);
-        chart.data.labels = dates.slice(-range);
-        chart.data.datasets[0].data = converted.slice(-range);
+        let converted = getConvertedPrices(currentCurrency);
+        let shownPrices, shownDates;
+
+        if (range === 180) {
+          shownPrices = aggregate(converted.slice(-180), 14);
+          shownDates = aggregateDates(dates.slice(-180), 14);
+        } else if (range === 365) {
+          shownPrices = aggregate(converted.slice(-365), 30);
+          shownDates = aggregateDates(dates.slice(-365), 30);
+        } else {
+          shownPrices = converted.slice(-range);
+          shownDates = dates.slice(-range);
+        }
+
+        chart.data.labels = shownDates;
+        chart.data.datasets[0].data = shownPrices;
         chart.update();
       });
     });
@@ -214,8 +245,23 @@
         currentCurrency = btn.dataset.currency;
         const converted = getConvertedPrices(currentCurrency);
         const range = parseInt(container.querySelector(".poke-range-buttons .active").dataset.range);
-        chart.data.datasets[0].data = converted.slice(-range);
+
+        let shownPrices, shownDates;
+        if (range === 180) {
+          shownPrices = aggregate(converted.slice(-180), 14);
+          shownDates = aggregateDates(dates.slice(-180), 14);
+        } else if (range === 365) {
+          shownPrices = aggregate(converted.slice(-365), 30);
+          shownDates = aggregateDates(dates.slice(-365), 30);
+        } else {
+          shownPrices = converted.slice(-range);
+          shownDates = dates.slice(-range);
+        }
+
+        chart.data.labels = shownDates;
+        chart.data.datasets[0].data = shownPrices;
         chart.update();
+
         priceLabel.textContent = `${getSymbol(currentCurrency)}${converted[converted.length - 1].toFixed(2)}`;
       });
     });
