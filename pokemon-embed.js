@@ -139,14 +139,13 @@
         `;
 
         p.replaceWith(container);
-
         setupEmbed(container, id);
       }
     }
   }
 
   async function setupEmbed(container, id) {
-    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvcHRueGt4dWxpZ3RoZnZlZmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MTY3MjcsImV4cCI6MjA1ODk5MjcyN30.4qh8BWbnwsrfbPHg7PfPG2B-0aTKpgipOATLqHq9MN0";
+    const ANON_KEY = SUPABASE_KEY;
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
       headers: {
@@ -154,7 +153,6 @@
         Authorization: `Bearer ${ANON_KEY}`,
       },
     });
-
 
     if (!res.ok) {
       console.error("Price data fetch failed", await res.text());
@@ -165,8 +163,23 @@
     const ctx = container.querySelector("canvas").getContext("2d");
     const prices = data.map(d => d.price_usd);
     const dates = data.map(d => d.date);
+    const priceLabel = container.querySelector(".poke-current-price");
+    const currencyButtons = container.querySelectorAll(".poke-currency-buttons button");
+    let currentCurrency = "usd";
 
-    const chart = new Chart(ctx, {
+    const getConvertedPrices = (currency) => {
+      if (currency === "eur") return prices.map(p => p * exchangeRates.eur);
+      if (currency === "gbp") return prices.map(p => p * exchangeRates.gbp);
+      return prices;
+    };
+
+    const getSymbol = (currency) => {
+      if (currency === "eur") return "€";
+      if (currency === "gbp") return "£";
+      return "$";
+    };
+
+    let chart = new Chart(ctx, {
       type: "line",
       data: {
         labels: dates.slice(-7),
@@ -180,16 +193,30 @@
       }
     });
 
-    container.querySelector(".poke-current-price").textContent = `$${prices[prices.length - 1]}`;
+    priceLabel.textContent = `$${prices[prices.length - 1]}`;
 
     container.querySelectorAll(".poke-range-buttons button").forEach(btn => {
       btn.addEventListener("click", () => {
         container.querySelector(".poke-range-buttons .active").classList.remove("active");
         btn.classList.add("active");
         const range = parseInt(btn.dataset.range);
+        const converted = getConvertedPrices(currentCurrency);
         chart.data.labels = dates.slice(-range);
-        chart.data.datasets[0].data = prices.slice(-range);
+        chart.data.datasets[0].data = converted.slice(-range);
         chart.update();
+      });
+    });
+
+    currencyButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        container.querySelector(".poke-currency-buttons .active").classList.remove("active");
+        btn.classList.add("active");
+        currentCurrency = btn.dataset.currency;
+        const converted = getConvertedPrices(currentCurrency);
+        const range = parseInt(container.querySelector(".poke-range-buttons .active").dataset.range);
+        chart.data.datasets[0].data = converted.slice(-range);
+        chart.update();
+        priceLabel.textContent = `${getSymbol(currentCurrency)}${converted[converted.length - 1].toFixed(2)}`;
       });
     });
 
