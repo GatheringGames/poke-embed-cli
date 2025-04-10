@@ -229,10 +229,14 @@ document.head.appendChild(style);
   };
 
   function renderEnergySymbols(costStr) {
-    return costStr.replace(/\{([A-Z])\}/g, (_, symbol) => {
+    const matches = costStr.match(/\{([A-Z])\}/g) || [];
+    return matches.map(match => {
+      const symbol = match.replace(/\{|\}/g, '');
       const url = ENERGY_ICON_URLS[symbol];
-      return url ? `<img src="${url}" alt="{${symbol}}" class="energy-icon">` : `{${symbol}}`;
-    });
+      return url
+        ? `<img src="${url}" alt="${symbol}" class="energy-icon">`
+        : match;
+    }).join('');
   }
 
   function renderAdditionalCardDetails(dataset) {
@@ -252,7 +256,7 @@ document.head.appendChild(style);
       for (const atk of attackArray) {
         attacksHtml += `
           <div class="poke-attack">
-            <div><strong>${renderEnergySymbols(atk.cost)} ${atk.name}</strong> &nbsp;&nbsp;&nbsp; ${atk.damage}</div>
+            <div class="poke-attack-line"><strong>${renderEnergySymbols(atk.cost)} ${atk.name}</strong> &nbsp;&nbsp;&nbsp; ${atk.damage}</div>
             ${atk.text ? `<div class="poke-attack-text">${atk.text}</div>` : ""}
           </div>
         `;
