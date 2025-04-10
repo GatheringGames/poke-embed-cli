@@ -251,7 +251,8 @@ document.head.appendChild(style);
   
     let attacksHtml = "";
     try {
-      const attackArray = JSON.parse(attacks.replaceAll("&quot;", '"'));
+      const decoded = new DOMParser().parseFromString(attacks, "text/html").documentElement.textContent;
+      const attackArray = JSON.parse(decoded);
       attackArray.sort((a, b) => a.cost.length - b.cost.length); // Sort by energy cost length
   
       for (const atk of attackArray) {
