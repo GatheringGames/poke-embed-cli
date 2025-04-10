@@ -214,6 +214,27 @@ document.head.appendChild(style);
   `;
   document.head.appendChild(style);
 
+  const ENERGY_ICON_URLS = {
+    G: "https://js.gatheringgames.co.uk/symbols/grass.svg",
+    R: "https://js.gatheringgames.co.uk/symbols/fire.svg",
+    W: "https://js.gatheringgames.co.uk/symbols/water.svg",
+    L: "https://js.gatheringgames.co.uk/symbols/lightning.svg",
+    P: "https://js.gatheringgames.co.uk/symbols/psychic.svg",
+    F: "https://js.gatheringgames.co.uk/symbols/fighting.svg",
+    D: "https://js.gatheringgames.co.uk/symbols/darkness.svg",
+    M: "https://js.gatheringgames.co.uk/symbols/metal.svg",
+    Y: "https://js.gatheringgames.co.uk/symbols/fairy.svg",
+    N: "https://js.gatheringgames.co.uk/symbols/dragon.svg",
+    C: "https://js.gatheringgames.co.uk/symbols/colorless.svg"
+  };
+
+  function renderEnergySymbols(costStr) {
+    return costStr.replace(/\{([A-Z])\}/g, (_, symbol) => {
+      const url = ENERGY_ICON_URLS[symbol];
+      return url ? `<img src="${url}" alt="{${symbol}}" class="energy-icon">` : `{${symbol}}`;
+    });
+  }
+
   function renderAdditionalCardDetails(dataset) {
     const { hp, types, abilityName, abilityText, attacks } = dataset;
 
@@ -231,7 +252,7 @@ document.head.appendChild(style);
       for (const atk of attackArray) {
         attacksHtml += `
           <div class="poke-attack">
-            <div><strong>${atk.cost} ${atk.name}</strong> &nbsp;&nbsp;&nbsp; ${atk.damage}</div>
+            <div><strong>${renderEnergySymbols(atk.cost)} ${atk.name}</strong> &nbsp;&nbsp;&nbsp; ${atk.damage}</div>
             ${atk.text ? `<div class="poke-attack-text">${atk.text}</div>` : ""}
           </div>
         `;
