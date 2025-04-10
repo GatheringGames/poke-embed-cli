@@ -1,4 +1,3 @@
-
 // == Pokemon Embed Script ==
 (async () => {
   const SUPABASE_URL = "https://goptnxkxuligthfvefes.supabase.co";
@@ -16,10 +15,7 @@
   const chartJsScript = document.createElement("script");
   chartJsScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
   document.head.appendChild(chartJsScript);
-  chartJsScript.onload = () => {
-    initEmbeds();
-    initGridCardClicks();
-  };
+  chartJsScript.onload = () => initEmbeds();
 
   const style = document.createElement("style");
   style.textContent = `
@@ -55,11 +51,6 @@
     .poke-rarity {
       margin-bottom: 0.5em;
       color: #ccc;
-    }
-    .poke-text, .poke-ability, .poke-attack-text {
-      font-size: 14px;
-      line-height: 1.4;
-      margin-bottom: 0.5em;
     }
     .poke-price-label {
       font-weight: bold;
@@ -101,99 +92,109 @@
         align-items: center;
       }
     }
-    .poke-embed-modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 1em;
-      z-index: 1000;
-    }
-    .poke-embed-modal.show {
-      display: flex;
-    }
-    .poke-modal-close {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      font-size: 28px;
-      color: white;
-      cursor: pointer;
-      z-index: 1001;
-    }
   `;
   document.head.appendChild(style);
 
-  function renderAdditionalCardDetails(dataset) {
-    const { hp, types, abilityName, abilityText, attacks } = dataset;
+  async function initEmbeds() {
+    const regex = /embed::\[\[(.+?)\s+\((.+?)\)\]\]/g;
+    const paragraphs = Array.from(document.querySelectorAll("p"));
 
-    const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
-    const hpInfo = hp ? `<div class="poke-hp">${hp} HP</div>` : "";
-    const abilityInfo = abilityName
-      ? `<div class="poke-ability"><strong>${abilityName}</strong>: ${abilityText}</div>`
-      : "";
+    for (const p of paragraphs) {
+      const matches = [...p.innerHTML.matchAll(regex)];
+      if (!matches.length) continue;
 
-    let attacksHtml = "";
-    try {
-      const attackArray = JSON.parse(attacks.replaceAll("&quot;", '"'));
-      attackArray.sort((a, b) => a.cost.length - b.cost.length); // Sort by energy cost length
+      for (const match of matches) {
+        const [fullMatch, name, id] = match;
+        const [set, number] = id.split("-");
 
-      for (const atk of attackArray) {
-        attacksHtml += `
-          <div class="poke-attack">
-            <div><strong>${atk.cost}</strong> ${atk.name} <span style="float:right">${atk.damage}</span></div>
-            ${atk.text ? `<div class="poke-attack-text">${atk.text}</div>` : ""}
+        const rarity = await fetch(`https://api.pokemontcg.io/v2/cards/${id}`)
+          .then(res => res.json())
+          .then(json => json?.data?.rarity || "")
+          .catch(() => "");
+
+        const container = document.createElement("div");
+        container.className = "poke-embed";
+        container.innerHTML = `
+          <div class="poke-card-image">
+            <img src="https://images.pokemontcg.io/${set}/${number}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${number}_hires.png" />
+          </div>
+          <div class="poke-info">
+            <h3>${name}</h3>
+            <div class="poke-rarity">${rarity}</div>
+            <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
+            <div class="poke-currency-buttons">
+              <button class="active" data-currency="usd">USD</button>
+              <button data-currency="eur">EUR</button>
+              <button data-currency="gbp">GBP</button>
+            </div>
+            <canvas class="poke-price-chart"></canvas>
+            <div class="poke-range-buttons">
+              <button class="active" data-range="7">7d</button>
+              <button data-range="30">30d</button>
+              <button data-range="180">6mo</button>
+              <button data-range="365">1yr</button>
+            </div>
+            <div class="poke-price-note">Prices provided by TCGplayer</div>
           </div>
         `;
+
+        p.replaceWith(container);
+        setupEmbed(container, id);
       }
-    } catch (err) {
-      console.error("Attack parse failed", err, attacks);
+    }
+  }
+
+  async function setupEmbed(container, id) {
+    const ANON_KEY = SUPABASE_KEY;
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
+      headers: {
+        apikey: ANON_KEY,
+        Authorization: `Bearer ${ANON_KEY}`,
+      },
+    });
+
+    if (!res.ok) {
+      console.error("Price data fetch failed", await res.text());
+      return;
     }
 
-    return `
-      <div class="poke-stats">
-        ${hpInfo}
-        ${typeBadge}
-      </div>
-      ${abilityInfo}
-      ${attacksHtml}
-    `;
-  }
-
-  function getSymbol(currency) {
-    if (currency === "eur") return "€";
-    if (currency === "gbp") return "£";
-    return "$";
-  }
-
-  function aggregate(data, intervalDays) {
-    const result = [];
-    for (let i = 0; i < data.length; i += intervalDays) {
-      const slice = data.slice(i, i + intervalDays);
-      const avg = slice.reduce((sum, val) => sum + val, 0) / slice.length;
-      result.push(avg);
-    }
-    return result;
-  }
-
-  function aggregateDates(dates, intervalDays) {
-    const result = [];
-    for (let i = 0; i < dates.length; i += intervalDays) {
-      result.push(dates[i]);
-    }
-    return result;
-  }
-
-  async function setupEmbed(container, id, prices, dates, currentCurrency = "usd") {
+    const data = await res.json();
     const ctx = container.querySelector("canvas").getContext("2d");
+    const prices = data.map(d => d.price_usd);
+    const dates = data.map(d => d.date);
     const priceLabel = container.querySelector(".poke-current-price");
+    const currencyButtons = container.querySelectorAll(".poke-currency-buttons button");
+    let currentCurrency = "usd";
 
     const getConvertedPrices = (currency) => {
       if (currency === "eur") return prices.map(p => p * exchangeRates.eur);
       if (currency === "gbp") return prices.map(p => p * exchangeRates.gbp);
       return prices;
+    };
+
+    const getSymbol = (currency) => {
+      if (currency === "eur") return "€";
+      if (currency === "gbp") return "£";
+      return "$";
+    };
+
+    const aggregate = (data, intervalDays) => {
+      const result = [];
+      for (let i = 0; i < data.length; i += intervalDays) {
+        const slice = data.slice(i, i + intervalDays);
+        const avg = slice.reduce((sum, val) => sum + val, 0) / slice.length;
+        result.push(avg);
+      }
+      return result;
+    };
+
+    const aggregateDates = (dates, intervalDays) => {
+      const result = [];
+      for (let i = 0; i < dates.length; i += intervalDays) {
+        result.push(dates[i]);
+      }
+      return result;
     };
 
     let chart = new Chart(ctx, {
@@ -210,14 +211,14 @@
       }
     });
 
-    priceLabel.textContent = `${getSymbol(currentCurrency)}${getConvertedPrices(currentCurrency).slice(-1)[0].toFixed(2)}`;
+    priceLabel.textContent = `$${prices[prices.length - 1]}`;
 
     container.querySelectorAll(".poke-range-buttons button").forEach(btn => {
       btn.addEventListener("click", () => {
         container.querySelector(".poke-range-buttons .active").classList.remove("active");
         btn.classList.add("active");
         const range = parseInt(btn.dataset.range);
-        const converted = getConvertedPrices(currentCurrency);
+        let converted = getConvertedPrices(currentCurrency);
         let shownPrices, shownDates;
 
         if (range === 180) {
@@ -237,7 +238,7 @@
       });
     });
 
-    container.querySelectorAll(".poke-currency-buttons button").forEach(btn => {
+    currencyButtons.forEach(btn => {
       btn.addEventListener("click", () => {
         container.querySelector(".poke-currency-buttons .active").classList.remove("active");
         btn.classList.add("active");
@@ -268,72 +269,5 @@
     container.querySelector("img").addEventListener("click", e => {
       window.open(e.target.dataset.hires, "_blank");
     });
-  }
-
-  async function initGridCardClicks() {
-    const cards = document.querySelectorAll(".pokemon-set-list-card");
-    const modal = document.getElementById("pokeEmbedModal");
-
-    if (!modal) return;
-
-    cards.forEach(card => {
-      card.addEventListener("click", async () => {
-        const { id, name, set, number, image, rarity, text } = card.dataset;
-
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-          },
-        });
-
-        const priceData = await res.json();
-        const prices = priceData.map(d => d.price_usd);
-        const dates = priceData.map(d => d.date);
-
-        modal.innerHTML = `
-          <div class="poke-modal-close" id="pokeModalClose">✖</div>
-          <div class="poke-embed">
-            <div class="poke-card-image">
-              <img src="https://images.pokemontcg.io/${set}/${number}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${number}_hires.png" />
-            </div>
-            <div class="poke-info">
-              <h3>${name}</h3>
-              <div class="poke-rarity">${rarity}</div>
-              <div class="poke-text">${text}</div>
-              <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
-              <div class="poke-currency-buttons">
-                <button class="active" data-currency="usd">USD</button>
-                <button data-currency="eur">EUR</button>
-                <button data-currency="gbp">GBP</button>
-              </div>
-              <canvas class="poke-price-chart"></canvas>
-              <div class="poke-range-buttons">
-                <button class="active" data-range="7">7d</button>
-                <button data-range="30">30d</button>
-                <button data-range="180">6mo</button>
-                <button data-range="365">1yr</button>
-              </div>
-              <div class="poke-price-note">Prices provided by TCGplayer</div>
-            </div>
-          </div>
-        `;
-
-        const cardDetailsHtml = renderAdditionalCardDetails(card.dataset);
-        modal.querySelector(".poke-info").insertAdjacentHTML("beforeend", cardDetailsHtml);
-
-        modal.classList.add("show");
-        setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
-
-        document.getElementById("pokeModalClose").onclick = () => modal.classList.remove("show");
-        modal.onclick = (e) => {
-          if (e.target === modal) modal.classList.remove("show");
-        };
-      });
-    });
-  }
-
-  async function initEmbeds() {
-    // existing embed::[[...]] handling left unchanged for backward compatibility
   }
 })();
