@@ -1,4 +1,45 @@
 
+// This portion enhances the modal to render full card info (HP, type, ability, attacks)
+function renderAdditionalCardDetails(container, dataset) {
+  const { hp, types, abilityName, abilityText, attacks } = dataset;
+
+  const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
+  const hpInfo = hp ? `<div class="poke-hp">${hp} HP</div>` : "";
+  const abilityInfo = abilityName
+    ? `<div class="poke-ability"><strong>${abilityName}</strong>: ${abilityText}</div>`
+    : "";
+
+  let attacksHtml = "";
+  try {
+    const attackArray = JSON.parse(attacks.replaceAll("&quot;", '"'));
+    attackArray.sort((a, b) => a.cost.length - b.cost.length); // Sort by energy cost length
+
+    for (const atk of attackArray) {
+      attacksHtml += `
+        <div class="poke-attack">
+          <div><strong>${atk.cost}</strong> ${atk.name} <span style="float:right">${atk.damage}</span></div>
+          ${atk.text ? `<div class="poke-attack-text">${atk.text}</div>` : ""}
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.error("Attack parse failed", err, attacks);
+  }
+
+  return `
+    <div class="poke-stats">
+      ${hpInfo}
+      ${typeBadge}
+    </div>
+    ${abilityInfo}
+    ${attacksHtml}
+  `;
+}
+
+// Add this call inside your modal-rendering logic:
+const cardDetailsHtml = renderAdditionalCardDetails(card.dataset);
+modal.querySelector(".poke-info").insertAdjacentHTML("beforeend", cardDetailsHtml);
+
 // == Pokemon Embed Script ==
 (async () => {
   const SUPABASE_URL = "https://goptnxkxuligthfvefes.supabase.co";
