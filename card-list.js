@@ -259,7 +259,7 @@ document.head.appendChild(style);
         attacksHtml += `
           <div class="poke-attack">
             <span class="poke-attack-line">
-              ${renderEnergySymbols(atk.cost)}
+              ${renderEnergySymbols(atk.cost.join(""))}
               <strong>${atk.name}</strong>
               &nbsp;&nbsp;&nbsp;
               <span class="poke-attack-damage">${atk.damage}</span>
