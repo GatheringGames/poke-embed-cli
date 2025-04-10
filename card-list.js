@@ -220,7 +220,7 @@ document.head.appendChild(style);
     const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
     const hpInfo = hp ? `<div class="poke-hp">${hp} HP</div>` : "";
     const abilityInfo = abilityName
-      ? `<div class="poke-ability"><strong>${abilityName}</strong>: ${abilityText}</div>`
+      ? `<div class="poke-ability"><strong>Ability: ${abilityName}</strong><br>${abilityText}</div>`
       : "";
 
     let attacksHtml = "";
