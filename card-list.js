@@ -300,7 +300,6 @@
             <div class="poke-info">
               <h3>${name}</h3>
               <div class="poke-rarity">${rarity}</div>
-              <div class="poke-text">${text}</div>
               <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
               <div class="poke-currency-buttons">
                 <button class="active" data-currency="usd">USD</button>
