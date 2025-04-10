@@ -24,15 +24,15 @@
   const style = document.createElement("style");
   style.textContent = `
     .poke-embed {
-      background: #394042;
-      color: white;
-      border-radius: 8px;
-      padding: 1em;
-      margin: 1em 0;
-      display: flex;
-      gap: 1em;
-      border: 2px solid #5c696d;
-      align-items: center;
+      width: 100%;
+      max-width: 600px;
+      min-height: 360px;
+      box-sizing: border-box;
+    }
+    @media (min-width: 768px) {
+      .poke-embed {
+        width: 600px;
+      }
     }
     .poke-card-image img {
       width: 250px;
