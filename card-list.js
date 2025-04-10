@@ -13,13 +13,13 @@ style.textContent = `
   border: 2px solid #5c696d;
   align-items: center;
   width: 100%;
-  max-width: 600px;
+  max-width: 1000px;
   min-height: 360px;
   box-sizing: border-box;
 }
 @media (min-width: 768px) {
   .poke-embed {
-    width: 600px;
+    width: 1000px;
   }
 }
 .poke-card-image {
@@ -106,13 +106,13 @@ document.head.appendChild(style);
   style.textContent = `
     .poke-embed {
   width: 100%;
-  max-width: 600px;
+  max-width: 1000px;
   min-height: 360px;
   box-sizing: border-box;
 }
 @media (min-width: 768px) {
   .poke-embed {
-    width: 600px;
+    width: 1000px;
   }
 }
     .poke-card-image img {
@@ -179,13 +179,13 @@ document.head.appendChild(style);
     @media (max-width: 768px) {
       .poke-embed {
   width: 100%;
-  max-width: 600px;
+  max-width: 1000px;
   min-height: 360px;
   box-sizing: border-box;
 }
 @media (min-width: 768px) {
   .poke-embed {
-    width: 600px;
+    width: 1000px;
   }
 }
     }
