@@ -24,16 +24,16 @@
   const style = document.createElement("style");
   style.textContent = `
     .poke-embed {
-      width: 100%;
-      max-width: 600px;
-      min-height: 360px;
-      box-sizing: border-box;
-    }
-    @media (min-width: 768px) {
-      .poke-embed {
-        width: 600px;
-      }
-    }
+  width: 100%;
+  max-width: 600px;
+  min-height: 360px;
+  box-sizing: border-box;
+}
+@media (min-width: 768px) {
+  .poke-embed {
+    width: 600px;
+  }
+}
     .poke-card-image img {
       width: 250px;
       border-radius: 4px;
@@ -97,9 +97,16 @@
     }
     @media (max-width: 768px) {
       .poke-embed {
-        flex-direction: column;
-        align-items: center;
-      }
+  width: 100%;
+  max-width: 600px;
+  min-height: 360px;
+  box-sizing: border-box;
+}
+@media (min-width: 768px) {
+  .poke-embed {
+    width: 600px;
+  }
+}
     }
     .poke-embed-modal {
       position: fixed;
