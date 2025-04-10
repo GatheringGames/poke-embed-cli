@@ -254,9 +254,13 @@ document.head.appendChild(style);
       attackArray.sort((a, b) => a.cost.length - b.cost.length); // Sort by energy cost length
 
       for (const atk of attackArray) {
-        attacksHtml += `
           <div class="poke-attack">
-            <div class="poke-attack-line"><strong>${renderEnergySymbols(atk.cost)} ${atk.name}</strong> &nbsp;&nbsp;&nbsp; ${atk.damage}</div>
+            <span class="poke-attack-line">
+              ${renderEnergySymbols(atk.cost)}
+              <strong>${atk.name}</strong>
+              &nbsp;&nbsp;&nbsp;
+              <span class="poke-attack-damage">${atk.damage}</span>
+            </span>
             ${atk.text ? `<div class="poke-attack-text">${atk.text}</div>` : ""}
           </div>
         `;
