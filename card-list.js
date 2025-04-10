@@ -100,6 +100,7 @@ document.head.appendChild(style);
   chartJsScript.onload = () => {
     initEmbeds();
     initGridCardClicks();
+    loadGridPrices();
   };
 
   const style = document.createElement("style");
@@ -437,7 +438,29 @@ document.head.appendChild(style);
           </div>
         `;
 
+        async function loadGridPrices() {
+          const cards = document.querySelectorAll(".pokemon-set-list-card");
+          const headers = {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+          };
         
+          for (const card of cards) {
+            const id = card.dataset.id;
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=price_usd&card_id=eq.${id}&order=date.desc&limit=1`, {
+              headers,
+            });
+        
+            if (res.ok) {
+              const data = await res.json();
+              const price = data?.[0]?.price_usd;
+              if (price) {
+                const el = card.querySelector(".card-price");
+                if (el) el.textContent = `$${price.toFixed(2)}`;
+              }
+            }
+          }
+        }
         
 
         modal.classList.add("show");
