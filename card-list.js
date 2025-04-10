@@ -299,7 +299,8 @@
             </div>
             <div class="poke-info">
               <h3>${name}</h3>
-              <div class="poke-rarity">${rarity}</div>
+              <div class="poke-rarity">${rarity}</div>\n${renderAdditionalCardDetails(card.dataset)}
+              
               <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
               <div class="poke-currency-buttons">
                 <button class="active" data-currency="usd">USD</button>
@@ -319,7 +320,7 @@
         `;
 
         const cardDetailsHtml = renderAdditionalCardDetails(card.dataset);
-        modal.querySelector(".poke-info").insertAdjacentHTML("beforeend", cardDetailsHtml);
+        
 
         modal.classList.add("show");
         setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
