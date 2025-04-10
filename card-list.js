@@ -1,5 +1,86 @@
 
 // == Pokemon Embed Script ==
+const style = document.createElement("style");
+style.textContent = `
+/* Style fix for modal layout */
+.poke-embed {
+  display: flex;
+  flex-direction: row;
+  background: #394042;
+  color: white;
+  border-radius: 8px;
+  padding: 1em;
+  border: 2px solid #5c696d;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  min-height: 360px;
+  box-sizing: border-box;
+}
+@media (min-width: 768px) {
+  .poke-embed {
+    width: 600px;
+  }
+}
+.poke-card-image {
+  flex: 0 0 250px;
+}
+.poke-card-image img {
+  width: 100%;
+  border-radius: 4px;
+  cursor: zoom-in;
+  display: block;
+  margin: 0 auto;
+}
+.poke-info {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 1em;
+  color: white;
+}
+.poke-stats {
+  display: flex;
+  gap: 1em;
+  margin-bottom: 0.5em;
+}
+.poke-type {
+  font-style: italic;
+}
+.poke-ability {
+  margin-top: 0.5em;
+}
+.poke-attack {
+  margin-top: 0.75em;
+}
+.poke-embed-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+  z-index: 1000;
+}
+.poke-embed-modal.show {
+  display: flex;
+}
+.poke-modal-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+  z-index: 1001;
+}
+`;
+document.head.appendChild(style);
 (async () => {
   const SUPABASE_URL = "https://goptnxkxuligthfvefes.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvcHRueGt4dWxpZ3RoZnZlZmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MTY3MjcsImV4cCI6MjA1ODk5MjcyN30.4qh8BWbnwsrfbPHg7PfPG2B-0aTKpgipOATLqHq9MN0";
@@ -326,7 +407,7 @@
           </div>
         `;
 
-        const cardDetailsHtml = renderAdditionalCardDetails(card.dataset);
+        
         
 
         modal.classList.add("show");
