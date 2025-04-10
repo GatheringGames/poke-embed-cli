@@ -404,6 +404,7 @@ document.head.appendChild(style);
             apikey: SUPABASE_KEY,
             Authorization: `Bearer ${SUPABASE_KEY}`,
           },
+          
         });
 
         const priceData = await res.json();
@@ -438,33 +439,7 @@ document.head.appendChild(style);
           </div>
         `;
 
-        async function loadGridPrices() {
-          const cards = document.querySelectorAll(".pokemon-set-list-card");
-          const headers = {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-          };
         
-          for (const card of cards) {
-            const id = card.dataset.id;
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=price_usd&card_id=eq.${id}&order=date.desc&limit=1`, {
-              headers,
-            });
-        
-            if (res.ok) {
-              const data = await res.json();
-              const price = data?.[0]?.price_usd;
-              console.log("Price for", id, "=", price);
-        
-              const el = card.querySelector(".card-price");
-              if (el) {
-                el.textContent = price !== undefined && price !== null ? `$${price.toFixed(2)}` : "—";
-              } else {
-                console.warn("No .card-price element found for card:", id);
-              }
-            }
-          }
-        }
 
         modal.classList.add("show");
         setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
@@ -476,6 +451,34 @@ document.head.appendChild(style);
       });
     });
   }
+
+  async function loadGridPrices() {
+  const cards = document.querySelectorAll(".pokemon-set-list-card");
+  const headers = {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+  };
+
+  for (const card of cards) {
+    const id = card.dataset.id;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=price_usd&card_id=eq.${id}&order=date.desc&limit=1`, {
+      headers,
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const price = data?.[0]?.price_usd;
+      console.log("Price for", id, "=", price);
+
+      const el = card.querySelector(".card-price");
+      if (el) {
+        el.textContent = price !== undefined && price !== null ? `$${price.toFixed(2)}` : "—";
+      } else {
+        console.warn("No .card-price element found for card:", id);
+      }
+    }
+  }
+}
 
   async function initEmbeds() {
     // existing embed::[[...]] handling left unchanged for backward compatibility
