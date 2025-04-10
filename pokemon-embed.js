@@ -359,6 +359,8 @@ modal.querySelector(".poke-info").insertAdjacentHTML("beforeend", cardDetailsHtm
             <img src="https://images.pokemontcg.io/${set}/${number}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${number}_hires.png" />
           </div>
           <div class="poke-info">
+          const cardDetailsHtml = renderAdditionalCardDetails(card.dataset);
+          modal.querySelector(".poke-info").insertAdjacentHTML("beforeend", cardDetailsHtml);
             <h3>${name}</h3>
             <div class="poke-rarity">${rarity}</div>
             <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
