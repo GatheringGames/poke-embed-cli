@@ -143,7 +143,7 @@
       for (const atk of attackArray) {
         attacksHtml += `
           <div class="poke-attack">
-            <div><strong>${atk.cost}</strong> ${atk.name} <span style="float:right">${atk.damage}</span></div>
+            <div><strong>${atk.cost}</strong> ${atk.name} &nbsp;&nbsp;&nbsp; ${atk.damage}</div>
             ${atk.text ? `<div class="poke-attack-text">${atk.text}</div>` : ""}
           </div>
         `;
