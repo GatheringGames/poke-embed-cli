@@ -454,14 +454,17 @@ document.head.appendChild(style);
             if (res.ok) {
               const data = await res.json();
               const price = data?.[0]?.price_usd;
-              if (price) {
-                const el = card.querySelector(".card-price");
-                if (el) el.textContent = `$${price.toFixed(2)}`;
+              console.log("Price for", id, "=", price);
+        
+              const el = card.querySelector(".card-price");
+              if (el) {
+                el.textContent = price !== undefined && price !== null ? `$${price.toFixed(2)}` : "—";
+              } else {
+                console.warn("No .card-price element found for card:", id);
               }
             }
           }
         }
-        
 
         modal.classList.add("show");
         setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
