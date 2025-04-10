@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #f1f1f1;
+        opacity: .75;
+      }
+
+      .cls-2 {
+        fill: url(#radial-gradient);
+      }
+
+      .cls-3 {
+        fill: #231f20;
+      }
+    </style>
+    <radialGradient id="radial-gradient" cx="500.4" cy="500.2" fx="500.4" fy="500.2" r="499.6" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#beb7a9"/>
+      <stop offset=".24" stop-color="#b4ac9f"/>
+      <stop offset=".64" stop-color="#9b9185"/>
+      <stop offset=".81" stop-color="#908579"/>
+    </radialGradient>
+  </defs>
+  <!-- Generator: Adobe Illustrator 28.7.0, SVG Export Plug-In . SVG Version: 1.2.0 Build 136)  -->
+  <g>
+    <g id="Layer_1">
+      <g>
+        <g>
+          <path class="cls-2" d="M1000,500.18c0,275.94-223.69,499.62-499.6,499.62S.8,776.12.8,500.18,224.46.6,500.4.6s499.6,223.67,499.6,499.58Z"/>
+          <path class="cls-1" d="M121,260.53S210.77,101.25,407.71,63.58c0,0,46.34,11.6-34.74,52.14,0,0-182.48,153.51-214.33,159.31,0,0-49.23,20.25-37.64-14.49Z"/>
+        </g>
+        <g>
+          <polygon class="cls-3" points="315.15 334.16 683.92 334.16 502.44 664.32 315.15 334.16"/>
+          <polygon class="cls-3" points="272.68 478.97 212.81 365.03 276.53 254.99 409.76 254.99 361.49 173.9 234.05 173.9 119.93 364.93 174.73 477.64 272.68 478.97"/>
+          <polygon class="cls-3" points="728.12 478.97 787.97 365.03 724.26 254.99 591.03 254.99 639.31 173.9 766.74 173.9 880.86 364.93 826.04 477.64 728.12 478.97"/>
+          <polygon class="cls-3" points="367.29 635.35 432.94 743.48 568.07 743.48 631.79 629.58 678.14 710.66 612.47 826.49 384.66 826.49 319 716.43 367.29 635.35"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
