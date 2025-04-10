@@ -239,21 +239,22 @@ document.head.appendChild(style);
     }).join('');
   }
 
-  function renderAdditionalCardDetails(dataset) {
+   function renderAdditionalCardDetails(dataset) {
     const { hp, types, abilityName, abilityText, attacks } = dataset;
-
+  
     const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
     const hpInfo = hp ? `<div class="poke-hp">${hp} HP</div>` : "";
     const abilityInfo = abilityName
       ? `<div class="poke-ability"><strong>Ability: ${abilityName}</strong><br>${abilityText}</div>`
       : "";
-
+  
     let attacksHtml = "";
     try {
       const attackArray = JSON.parse(attacks.replaceAll("&quot;", '"'));
       attackArray.sort((a, b) => a.cost.length - b.cost.length); // Sort by energy cost length
-
+  
       for (const atk of attackArray) {
+        attacksHtml += `
           <div class="poke-attack">
             <span class="poke-attack-line">
               ${renderEnergySymbols(atk.cost)}
@@ -268,7 +269,7 @@ document.head.appendChild(style);
     } catch (err) {
       console.error("Attack parse failed", err, attacks);
     }
-
+  
     return `
       <div class="poke-stats">
         ${hpInfo}
