@@ -66,7 +66,7 @@ style.textContent = `
   align-items: center;
   justify-content: center;
   padding: 1em;
-  z-index: 1000;
+  z-index: 9999;
 }
 .poke-embed-modal.show {
   display: flex;
@@ -86,6 +86,21 @@ style.textContent = `
   color: white;
   cursor: pointer;
   z-index: 10;
+}
+.energy-icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  display: inline-block;
+  margin-right: 2px;
+}
+.poke-attack-line {
+  display: inline-block;
+  white-space: nowrap;
+}
+.poke-attack-damage {
+  font-weight: normal;
+  margin-left: 0.5em;
 }
 `;
 document.head.appendChild(style);
