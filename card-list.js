@@ -78,6 +78,7 @@ style.textContent = `
   color: white;
   cursor: pointer;
   z-index: 1001;
+  position: relative;
 }
 `;
 document.head.appendChild(style);
