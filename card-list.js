@@ -240,7 +240,9 @@ document.head.appendChild(style);
     }).join('');
   }
 
+
    function renderAdditionalCardDetails(dataset) {
+    const cardText = dataset.text;
     const { hp, types, abilityName, abilityText, attacks } = dataset;
   
     const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
@@ -248,7 +250,7 @@ document.head.appendChild(style);
     const abilityInfo = abilityName
       ? `<div class="poke-ability"><strong>Ability: ${abilityName}</strong><br>${abilityText}</div>`
       : "";
-  
+    const rulesText = cardText ? `<div class="poke-text">${cardText}</div>` : "";
     let attacksHtml = "";
     try {
       const decoded = new DOMParser().parseFromString(attacks, "text/html").documentElement.textContent;
@@ -278,8 +280,10 @@ document.head.appendChild(style);
         ${typeBadge}
       </div>
       ${abilityInfo}
+      ${rulesText}
       ${attacksHtml}
     `;
+
   }
 
   function getSymbol(currency) {
