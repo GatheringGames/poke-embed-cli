@@ -4,6 +4,7 @@ const style = document.createElement("style");
 style.textContent = `
 /* Style fix for modal layout */
 .poke-embed {
+  position: relative;
   display: flex;
   flex-direction: row;
   background: #394042;
@@ -72,13 +73,19 @@ style.textContent = `
 }
 .poke-modal-close {
   position: absolute;
-  top: 20px;
-  right: 30px;
-  font-size: 28px;
+  top: 8px;
+  right: 8px;
+  font-size: 24px;
+  background: #222;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: white;
   cursor: pointer;
-  z-index: 1001;
-  position: relative;
+  z-index: 10;
 }
 `;
 document.head.appendChild(style);
