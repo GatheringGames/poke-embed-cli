@@ -440,8 +440,8 @@ document.head.appendChild(style);
         const dates = priceData.map(d => d.date);
 
         modal.innerHTML = `
-          <div class="poke-modal-close" id="pokeModalClose">✖</div>
           <div class="poke-embed">
+          <div class="poke-modal-close" id="pokeModalClose">✖</div>
             <div class="poke-card-image">
               <img src="https://images.pokemontcg.io/${set}/${number}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${number}_hires.png" />
             </div>
