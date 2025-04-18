@@ -199,6 +199,14 @@ for card in cards:
     ability = card.get("abilities", [{}])[0]
     ability_name = ability.get("name", "")
     ability_text = ability.get("text", "")
+    
+    # Get the supertype (Pokémon, Trainer, Energy)
+    supertype = card.get("supertype", "")
+    
+    # Get the subtype for trainer cards (Item, Supporter, Stadium, Tool)
+    subtypes = card.get("subtypes", [])
+    subtype = subtypes[0] if subtypes else ""
+    
     attack_list = []
     for atk in card.get("attacks", []):
         attack_list.append({
@@ -227,7 +235,9 @@ for card in cards:
                 data-types="{types}"
                 data-ability-name="{ability_name.replace('"', '&quot;')}"
                 data-ability-text="{ability_text.replace('"', '&quot;')}"
-                data-attacks="{attacks_json}">
+                data-attacks="{attacks_json}"
+                data-supertype="{supertype}"
+                data-subtype="{subtype}">
             <img src="{image_url}" alt="{name} ({number})" loading="lazy">
             <p>{name}<br>
                 <small>{number}/{printed_total}</small><br>

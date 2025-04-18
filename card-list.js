@@ -117,6 +117,12 @@ style.textContent = `
     right: 12px;
   }
 }
+.poke-trainer-type {
+  font-style: italic;
+  color: #f0d048;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
 `;
 document.head.appendChild(style);
 (async () => {
@@ -402,10 +408,16 @@ document.head.appendChild(style);
 
    function renderAdditionalCardDetails(dataset) {
     const cardText = dataset.text;
-    const { hp, types, abilityName, abilityText, attacks } = dataset;
+    const { hp, types, abilityName, abilityText, attacks, supertype, subtype } = dataset;
   
     const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
     const hpInfo = hp ? `<div class="poke-hp">${hp} HP</div>` : "";
+    
+    // Add trainer card type info
+    let cardTypeInfo = "";
+    if (supertype === "Trainer") {
+      cardTypeInfo = `<div class="poke-trainer-type">Trainer Card${subtype ? ` - ${subtype}` : ""}</div>`;
+    }
     
     // Only include the ability section if both abilityName and abilityText are present
     const abilityInfo = (abilityName && abilityText) 
@@ -441,6 +453,7 @@ document.head.appendChild(style);
         ${hpInfo}
         ${typeBadge}
       </div>
+      ${cardTypeInfo}
       ${abilityInfo}
       ${rulesText}
       <div class="poke-attacks-container">
