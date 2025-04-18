@@ -137,8 +137,14 @@ document.head.appendChild(style);
     loadGridPrices();
   };
 
+  // Add class to prevent body scrolling when modal is open
   const style = document.createElement("style");
   style.textContent = `
+    body.modal-open {
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
     .poke-embed {
   width: 100%;
   max-width: 1000px;
@@ -521,12 +527,20 @@ document.head.appendChild(style);
 
         
 
+        // Show modal and prevent background scrolling
         modal.classList.add("show");
+        document.body.classList.add("modal-open");
         setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
 
-        document.getElementById("pokeModalClose").onclick = () => modal.classList.remove("show");
+        // Handle modal closing
+        const closeModal = () => {
+          modal.classList.remove("show");
+          document.body.classList.remove("modal-open");
+        };
+
+        document.getElementById("pokeModalClose").onclick = closeModal;
         modal.onclick = (e) => {
-          if (e.target === modal) modal.classList.remove("show");
+          if (e.target === modal) closeModal();
         };
       });
     });
