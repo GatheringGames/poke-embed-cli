@@ -171,6 +171,8 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: flex-start;
+  width: 100%;
 }
 
 .rarity-icon {
@@ -181,6 +183,8 @@ body {
   display: inline-block;
   border-radius: 0;
   overflow: visible;
+  margin: 0;
+  padding: 0;
 }
 
 .poke-text, .poke-ability, .poke-attack-text {
@@ -669,7 +673,9 @@ document.head.appendChild(style);
           <div class="poke-info">
             <h3>${name}</h3>
             <div class="poke-rarity">
-              ${rarityIcon}${rarity}
+              <span style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
+                ${rarityIcon}<span>${rarity}</span>
+              </span>
             </div>\n${renderAdditionalCardDetails(card.dataset)}
             
             <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
