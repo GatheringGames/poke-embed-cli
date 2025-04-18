@@ -406,9 +406,12 @@ document.head.appendChild(style);
   
     const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
     const hpInfo = hp ? `<div class="poke-hp">${hp} HP</div>` : "";
-    const abilityInfo = abilityName
+    
+    // Only include the ability section if both abilityName and abilityText are present
+    const abilityInfo = (abilityName && abilityText) 
       ? `<div class="poke-ability"><strong>Ability: ${abilityName}</strong><br>${abilityText}</div>`
       : "";
+      
     const rulesText = cardText ? `<div class="poke-text">${cardText}</div>` : "";
     let attacksHtml = "";
     try {
