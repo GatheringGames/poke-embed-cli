@@ -168,7 +168,17 @@ body {
   margin-bottom: 0.5em;
   color: #ccc;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
+
+.rarity-icon {
+  height: 18px;
+  width: auto;
+  vertical-align: middle;
+}
+
 .poke-text, .poke-ability, .poke-attack-text {
   font-size: 14px;
   line-height: 1.4;
@@ -643,6 +653,9 @@ document.head.appendChild(style);
       // Strip leading zeros for image URL
       const imageNumber = number.replace(/^0+/, '');
       
+      // Get rarity icon
+      const rarityIcon = getRarityIcon(rarity);
+      
       // Show loading state in modal immediately
       modal.innerHTML = `
         <div class="poke-embed">
@@ -651,7 +664,9 @@ document.head.appendChild(style);
           </div>
           <div class="poke-info">
             <h3>${name}</h3>
-            <div class="poke-rarity">${rarity}</div>\n${renderAdditionalCardDetails(card.dataset)}
+            <div class="poke-rarity">
+              ${rarity}${rarityIcon}
+            </div>\n${renderAdditionalCardDetails(card.dataset)}
             
             <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
             <div class="poke-currency-buttons">
@@ -848,7 +863,8 @@ document.head.appendChild(style);
     sortControls.innerHTML = `
       <label for="sortOption">Sort by</label>
       <select id="sortOption">
-        <option value="number_asc">Card number</option>
+        <option value="number_asc">Card number (asc)</option>
+        <option value="number_desc">Card number (desc)</option>
         <option value="name_asc">Card name (A-Z)</option>
         <option value="name_desc">Card name (Z-A)</option>
         <option value="rarity_desc">Rarity (desc)</option>
@@ -964,5 +980,18 @@ document.head.appendChild(style);
     
     // Cache the sorted cards for future use
     sortedCardsCache.set(cacheKey, [...cards]);
+  }
+
+  // Function to get rarity icon
+  function getRarityIcon(rarity) {
+    if (!rarity) return '';
+    
+    // Normalize the rarity to lowercase and handle special cases
+    const normalizedRarity = rarity.toLowerCase().trim();
+    
+    // Map to icon URL
+    const iconPath = `./symbols/${normalizedRarity}.svg`;
+    
+    return `<img src="${iconPath}" alt="${rarity}" class="rarity-icon">`;
   }
 })();
