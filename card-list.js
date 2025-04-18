@@ -576,32 +576,69 @@ document.head.appendChild(style);
   }
 
   async function loadGridPrices() {
-  const cards = document.querySelectorAll(".pokemon-set-list-card");
-  const headers = {
-    apikey: SUPABASE_KEY,
-    Authorization: `Bearer ${SUPABASE_KEY}`,
-  };
+    const cards = document.querySelectorAll(".pokemon-set-list-card");
+    const headers = {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+    };
 
-  for (const card of cards) {
-    const id = card.dataset.id;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=price_usd&card_id=eq.${id}&order=date.desc&limit=1`, {
-      headers,
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      const price = data?.[0]?.price_usd;
-      console.log("Price for", id, "=", price);
-
-      const el = card.querySelector(".card-price");
-      if (el) {
-        el.textContent = price !== undefined && price !== null ? `$${price.toFixed(2)}` : "—";
-      } else {
-        console.warn("No .card-price element found for card:", id);
+    // Get all card IDs
+    const cardIds = Array.from(cards).map(card => card.dataset.id);
+    
+    // If no cards, exit early
+    if (cardIds.length === 0) return;
+    
+    // Batch size for API requests
+    const BATCH_SIZE = 20;
+    
+    // Process cards in batches
+    for (let i = 0; i < cardIds.length; i += BATCH_SIZE) {
+      const batchIds = cardIds.slice(i, i + BATCH_SIZE);
+      
+      // Create a query string with all IDs in this batch
+      const idFilter = batchIds.map(id => `card_id.eq.${id}`).join(',');
+      
+      try {
+        // Make a single request for the entire batch using OR filter
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=card_id,price_usd&or=(${idFilter})&order=date.desc&limit=${BATCH_SIZE}`, {
+          headers,
+        });
+        
+        if (res.ok) {
+          const priceData = await res.json();
+          
+          // Group by card_id and get the most recent price for each card
+          const latestPrices = {};
+          priceData.forEach(item => {
+            if (!latestPrices[item.card_id]) {
+              latestPrices[item.card_id] = item.price_usd;
+            }
+          });
+          
+          // Update the UI with the prices we received
+          batchIds.forEach(cardId => {
+            const card = document.querySelector(`.pokemon-set-list-card[data-id="${cardId}"]`);
+            if (!card) return;
+            
+            const priceEl = card.querySelector(".card-price");
+            if (!priceEl) return;
+            
+            const price = latestPrices[cardId];
+            priceEl.textContent = price !== undefined && price !== null 
+              ? `$${price.toFixed(2)}` 
+              : "—";
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching batch prices:", error);
+      }
+      
+      // Add a small delay between batches to avoid overwhelming the API
+      if (i + BATCH_SIZE < cardIds.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
   }
-}
 
   async function initEmbeds() {
     // existing embed::[[...]] handling left unchanged for backward compatibility
