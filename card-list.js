@@ -277,6 +277,35 @@ canvas.poke-price-chart {
   margin: 0.5em 0;
   text-align: left;
 }
+
+/* Sorting controls styles */
+.pokemon-set-sort-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pokemon-set-sort-controls select, 
+.pokemon-set-sort-controls button {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.pokemon-set-sort-controls button {
+  background-color: #394042;
+  color: white;
+  border: none;
+}
+
+.pokemon-set-sort-controls button:hover {
+  background-color: #4a5457;
+}
 `;
 document.head.appendChild(style);
 (async () => {
@@ -337,6 +366,9 @@ document.head.appendChild(style);
   
   // Load Chart.js and then initialize
   await loadChartJs();
+  
+  // Create and insert sort controls
+  createSortControls();
   
   // Load cards in a more efficient order - do prices first since they're most visible
   loadGridPrices();
@@ -794,5 +826,97 @@ document.head.appendChild(style);
 
   async function initEmbeds() {
     // existing embed::[[...]] handling left unchanged for backward compatibility
+  }
+
+  // New function to create sort controls
+  function createSortControls() {
+    const gridContainer = document.querySelector('.pokemon-set-list-grid');
+    if (!gridContainer) return;
+    
+    // Create sort controls container
+    const sortControls = document.createElement('div');
+    sortControls.className = 'pokemon-set-sort-controls';
+    sortControls.innerHTML = `
+      <select id="sortCriterion">
+        <option value="number">Card Number</option>
+        <option value="name">Card Name</option>
+        <option value="rarity">Rarity</option>
+        <option value="price">Market Price</option>
+      </select>
+      <select id="sortDirection">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+      <button id="applySortButton">Sort Cards</button>
+    `;
+    
+    // Insert controls before the grid
+    gridContainer.parentNode.insertBefore(sortControls, gridContainer);
+    
+    // Add event listener to the sort button
+    document.getElementById('applySortButton').addEventListener('click', () => {
+      const criterion = document.getElementById('sortCriterion').value;
+      const direction = document.getElementById('sortDirection').value;
+      sortCards(criterion, direction);
+    });
+  }
+  
+  // Function to sort cards based on criterion and direction
+  function sortCards(criterion, direction) {
+    const gridContainer = document.querySelector('.pokemon-set-list-grid');
+    const cards = Array.from(gridContainer.querySelectorAll('.pokemon-set-list-card'));
+    
+    // Wait for prices to be loaded before sorting by price
+    if (criterion === 'price' && cards.some(card => card.querySelector('.card-price').textContent === 'Loading...')) {
+      alert('Please wait for prices to finish loading before sorting by price.');
+      return;
+    }
+    
+    cards.sort((a, b) => {
+      let valueA, valueB;
+      
+      switch (criterion) {
+        case 'number':
+          // Sort by the numerical part of the card number
+          valueA = parseInt(a.dataset.number.replace(/\D/g, '')) || 0;
+          valueB = parseInt(b.dataset.number.replace(/\D/g, '')) || 0;
+          break;
+          
+        case 'name':
+          valueA = a.dataset.name.toLowerCase();
+          valueB = b.dataset.name.toLowerCase();
+          break;
+          
+        case 'rarity':
+          valueA = a.dataset.rarity.toLowerCase();
+          valueB = b.dataset.rarity.toLowerCase();
+          break;
+          
+        case 'price':
+          // Extract numeric price values
+          valueA = parseFloat(a.querySelector('.card-price').textContent.replace(/[^0-9.-]+/g, '')) || 0;
+          valueB = parseFloat(b.querySelector('.card-price').textContent.replace(/[^0-9.-]+/g, '')) || 0;
+          break;
+          
+        default:
+          valueA = 0;
+          valueB = 0;
+      }
+      
+      // Apply sort direction
+      let comparison = 0;
+      if (criterion === 'name' || criterion === 'rarity') {
+        // String comparison
+        comparison = valueA.localeCompare(valueB);
+      } else {
+        // Numeric comparison
+        comparison = valueA - valueB;
+      }
+      
+      return direction === 'asc' ? comparison : -comparison;
+    });
+    
+    // Reappend cards in sorted order
+    cards.forEach(card => gridContainer.appendChild(card));
   }
 })();
