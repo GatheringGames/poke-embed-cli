@@ -575,6 +575,10 @@ document.head.appendChild(style);
       card.addEventListener("click", async () => {
         const { id, name, set, number, image, rarity, text } = card.dataset;
 
+        // Store the current scroll position
+        const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        
         // Show loading state in modal immediately
         modal.innerHTML = `
           <div class="poke-embed">
@@ -603,12 +607,12 @@ document.head.appendChild(style);
             </div>
           </div>
         `;
-
-        // Store the current scroll position
-        const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Prevent background scrolling without storing position
+        // Apply fixed position to body with the current scroll coordinates
         document.body.classList.add("modal-open");
+        document.body.style.top = `-${scrollPosition}px`;
+        document.body.style.left = `-${scrollLeft}px`;
+        
         modal.classList.add("show");
         
         // Reset modal scroll position
@@ -619,13 +623,12 @@ document.head.appendChild(style);
           document.body.classList.remove("modal-open");
           modal.classList.remove("show");
           
-          // Restore the scroll position after a short delay
-          setTimeout(() => {
-            window.scrollTo({
-              top: scrollPosition,
-              behavior: "instant"
-            });
-          }, 10);
+          // Remove the inline styles
+          document.body.style.top = '';
+          document.body.style.left = '';
+          
+          // Restore the scroll position
+          window.scrollTo(scrollLeft, scrollPosition);
         };
 
         document.getElementById("pokeModalClose").onclick = closeModal;
