@@ -33,6 +33,15 @@ for card in cards:
     name = card.get("name")
     number = card.get("number")
     printed_total = card.get("set", {}).get("printedTotal", "")
+    
+    # Format the card number with leading zeros if it's numeric
+    formatted_number = number
+    if number and number.isdigit() and printed_total:
+        # Determine the number of digits in the total
+        total_digits = len(printed_total)
+        # Pad the number with leading zeros to match
+        formatted_number = number.zfill(total_digits)
+    
     price = card.get("tcgplayer", {}).get("prices", {}).get("normal", {}).get("market")
     price_str = f"${price:.2f}" if price else "—"
     card_id = card.get("id", "")
@@ -82,7 +91,7 @@ for card in cards:
         <div class="pokemon-set-list-card"
                 data-id="{card_id}"
                 data-name="{name}"
-                data-number="{number}"
+                data-number="{formatted_number}"
                 data-set="{set_id}"
                 data-image="{image_url}"
                 data-rarity="{rarity}"
@@ -94,9 +103,9 @@ for card in cards:
                 data-attacks="{attacks_json}"
                 data-supertype="{supertype}"
                 data-subtype="{subtype}">
-            <img src="{image_url}" alt="{name} ({number})" loading="lazy">
+            <img src="{image_url}" alt="{name} ({formatted_number})" loading="lazy">
             <p>{name}<br>
-                <small>{number}/{printed_total}</small><br>
+                <small>{formatted_number}/{printed_total}</small><br>
                 <small class="card-price">Loading...</small>
             </p>
         </div>
