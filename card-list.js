@@ -1138,6 +1138,18 @@ document.head.appendChild(style);
     return `<img src="${iconPath}" alt="${rarity}" class="rarity-icon" style="height:16px; max-width:none; border-radius:0; overflow:visible;">`;
   }
 
+  // Define the rarity order for sorting
+  const RARITY_ORDER = {
+    'Common': 1,
+    'Uncommon': 2,
+    'Rare': 3,
+    'Double Rare': 4,
+    'Illustration Rare': 5,
+    'Ultra Rare': 6,
+    'Special Illustration Rare': 7,
+    'Hyper Rare': 8
+  };
+
   // Function to create filter controls
   function createFilterControls() {
     const gridContainer = document.querySelector('.pokemon-set-list-grid');
@@ -1214,16 +1226,23 @@ document.head.appendChild(style);
     rarityDropdown.innerHTML = `
       <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
       <div class="filter-dropdown-content" id="rarityFilterContent">
-        ${Array.from(allRarities).sort().map(rarity => {
-          const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
-          return `
-            <label class="filter-checkbox-item">
-              <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
-              <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
-              ${rarity}
-            </label>
-          `;
-        }).join('')}
+        ${Array.from(allRarities)
+          // Sort by the predefined rarity order
+          .sort((a, b) => {
+            const orderA = RARITY_ORDER[a] || 999; // Default high value for unknown rarities
+            const orderB = RARITY_ORDER[b] || 999;
+            return orderA - orderB;
+          })
+          .map(rarity => {
+            const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
+            return `
+              <label class="filter-checkbox-item">
+                <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
+                <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
+                ${rarity}
+              </label>
+            `;
+          }).join('')}
       </div>
     `;
     
@@ -1346,13 +1365,21 @@ document.head.appendChild(style);
       // If no type match, don't show the card
       if (!typeMatch) showCard = false;
       
-      // Check rarity filter
-      if (showCard && !filterState.rarities.has(cardRarity)) {
+      // Check rarity filter - Only apply if type filter passed
+      if (showCard && cardRarity && !filterState.rarities.has(cardRarity)) {
         showCard = false;
       }
       
       // Show or hide the card
       card.classList.toggle('filtered-out', !showCard);
+    });
+    
+    // Log the current state for debugging
+    console.log('Filter state:', {
+      typesSelected: Array.from(filterState.types),
+      raritiesSelected: Array.from(filterState.rarities),
+      allTypes: Array.from(filterState.allTypes),
+      allRarities: Array.from(filterState.allRarities)
     });
   }
 })();
