@@ -405,10 +405,11 @@ canvas.poke-price-chart {
 }
 
 .filter-type-icon, .filter-rarity-icon {
-  height: 16px;
+  height: 14px;
   width: auto;
-  margin-right: 8px;
+  margin-right: 6px;
   vertical-align: middle;
+  display: inline-block;
 }
 
 .filter-applied {
@@ -450,10 +451,12 @@ document.head.appendChild(style);
   // Cache for sorted cards to avoid resorting unnecessarily
   const sortedCardsCache = new Map();
   
-  // Filter state
+  // Filter state - initialize with all types and rarities as selected
   const filterState = {
     types: new Set(),
-    rarities: new Set()
+    rarities: new Set(),
+    allTypes: new Set(),
+    allRarities: new Set()
   };
 
   // Map of energy types to their icons
@@ -1140,6 +1143,46 @@ document.head.appendChild(style);
     const gridContainer = document.querySelector('.pokemon-set-list-grid');
     if (!gridContainer) return;
     
+    // Collect all types and rarities that exist in the data
+    const allTypes = new Set();
+    const allRarities = new Set();
+    
+    // Process all cards to get unique types and rarities
+    document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
+      // Get rarity
+      const rarity = card.dataset.rarity;
+      if (rarity) allRarities.add(rarity);
+      
+      // Get types for Pokemon cards
+      const types = card.dataset.types ? card.dataset.types.split(', ') : [];
+      types.forEach(type => {
+        if (type) allTypes.add(type);
+      });
+      
+      // Add supertype for non-Pokemon cards
+      const supertype = card.dataset.supertype;
+      if (supertype === 'Trainer') {
+        allTypes.add('Trainer');
+      } else if (supertype === 'Energy') {
+        if (card.dataset.subtype === 'Special') {
+          allTypes.add('Special Energy');
+        } else {
+          // Regular energy uses its type
+          types.forEach(type => {
+            if (type) allTypes.add(type);
+          });
+        }
+      }
+    });
+    
+    // Initialize filterState with all types and rarities
+    filterState.allTypes = new Set(allTypes);
+    filterState.allRarities = new Set(allRarities);
+    
+    // By default, all options are selected
+    filterState.types = new Set(allTypes);
+    filterState.rarities = new Set(allRarities);
+    
     // Create filter controls container
     const filterControls = document.createElement('div');
     filterControls.className = 'pokemon-set-filter-controls';
@@ -1150,13 +1193,18 @@ document.head.appendChild(style);
     typeDropdown.innerHTML = `
       <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
       <div class="filter-dropdown-content" id="typeFilterContent">
-        ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => `
-          <label class="filter-checkbox-item">
-            <input type="checkbox" value="${type}" data-filter-type="type">
-            ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
-            ${type}
-          </label>
-        `).join('')}
+        ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => {
+          // Only include types that exist in our data
+          if (!allTypes.has(type)) return '';
+          
+          return `
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="${type}" data-filter-type="type" checked>
+              ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
+              ${type}
+            </label>
+          `;
+        }).filter(html => html !== '').join('')}
       </div>
     `;
     
@@ -1166,14 +1214,23 @@ document.head.appendChild(style);
     rarityDropdown.innerHTML = `
       <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
       <div class="filter-dropdown-content" id="rarityFilterContent">
-        <!-- Will be populated dynamically -->
+        ${Array.from(allRarities).sort().map(rarity => {
+          const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
+          return `
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
+              <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
+              ${rarity}
+            </label>
+          `;
+        }).join('')}
       </div>
     `;
     
     // Create clear all filters button
     const clearFiltersButton = document.createElement('button');
     clearFiltersButton.className = 'filter-clear-all';
-    clearFiltersButton.textContent = 'Clear Filters';
+    clearFiltersButton.textContent = 'Reset Filters';
     clearFiltersButton.style.display = 'none'; // Hide initially
     
     // Add elements to the filter controls
@@ -1183,27 +1240,6 @@ document.head.appendChild(style);
     
     // Insert the filter controls before the grid
     gridContainer.parentNode.insertBefore(filterControls, gridContainer.parentNode.firstChild);
-    
-    // Collect unique rarities from cards
-    const rarities = new Set();
-    document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
-      const rarity = card.dataset.rarity;
-      if (rarity) rarities.add(rarity);
-    });
-    
-    // Populate rarity filter dropdown
-    const rarityContent = document.getElementById('rarityFilterContent');
-    Array.from(rarities).sort().forEach(rarity => {
-      const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
-      const rarityItem = document.createElement('label');
-      rarityItem.className = 'filter-checkbox-item';
-      rarityItem.innerHTML = `
-        <input type="checkbox" value="${rarity}" data-filter-type="rarity">
-        <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
-        ${rarity}
-      `;
-      rarityContent.appendChild(rarityItem);
-    });
     
     // Toggle dropdowns
     document.getElementById('typeFilterButton').addEventListener('click', function(e) {
@@ -1244,14 +1280,15 @@ document.head.appendChild(style);
       });
     });
     
-    // Clear all filters
+    // Reset all filters
     clearFiltersButton.addEventListener('click', function() {
-      filterState.types.clear();
-      filterState.rarities.clear();
+      // Reset to all filters selected
+      filterState.types = new Set(filterState.allTypes);
+      filterState.rarities = new Set(filterState.allRarities);
       
-      // Uncheck all checkboxes
+      // Check all checkboxes
       document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
-        checkbox.checked = false;
+        checkbox.checked = true;
       });
       
       applyFilters();
@@ -1263,13 +1300,19 @@ document.head.appendChild(style);
       const typeButton = document.getElementById('typeFilterButton');
       const rarityButton = document.getElementById('rarityFilterButton');
       
-      typeButton.textContent = filterState.types.size ? `Card Type (${filterState.types.size})` : 'Card Type';
-      rarityButton.textContent = filterState.rarities.size ? `Rarity (${filterState.rarities.size})` : 'Rarity';
+      // Count deselected items instead of selected ones
+      const typeCount = filterState.allTypes.size - filterState.types.size;
+      const rarityCount = filterState.allRarities.size - filterState.rarities.size;
       
-      typeButton.classList.toggle('filter-applied', filterState.types.size > 0);
-      rarityButton.classList.toggle('filter-applied', filterState.rarities.size > 0);
+      typeButton.textContent = typeCount > 0 ? `Card Type (${typeCount} hidden)` : 'Card Type';
+      rarityButton.textContent = rarityCount > 0 ? `Rarity (${rarityCount} hidden)` : 'Rarity';
       
-      clearFiltersButton.style.display = (filterState.types.size > 0 || filterState.rarities.size > 0) ? 'block' : 'none';
+      typeButton.classList.toggle('filter-applied', typeCount > 0);
+      rarityButton.classList.toggle('filter-applied', rarityCount > 0);
+      
+      clearFiltersButton.style.display = 
+        (filterState.types.size < filterState.allTypes.size || 
+        filterState.rarities.size < filterState.allRarities.size) ? 'block' : 'none';
     }
   }
   
@@ -1280,33 +1323,32 @@ document.head.appendChild(style);
     cards.forEach(card => {
       let showCard = true;
       
-      // Type filtering
-      if (filterState.types.size > 0) {
-        // Get the card's type from types attribute or supertype for trainers
-        const cardTypes = card.dataset.types ? card.dataset.types.split(', ') : [];
-        const cardSupertype = card.dataset.supertype;
-        
-        // Handle trainer and energy cards
-        if (cardSupertype === 'Trainer' && filterState.types.has('Trainer')) {
-          // Card is a Trainer and Trainer filter is active, so keep it
-        } else if (cardSupertype === 'Energy' && card.dataset.subtype === 'Special' && filterState.types.has('Special Energy')) {
-          // Card is a Special Energy and Special Energy filter is active
-        } else if (cardTypes.length > 0) {
-          // For Pokémon cards, check if any of its types match the filter
-          const typeMatch = cardTypes.some(type => filterState.types.has(type));
-          if (!typeMatch) showCard = false;
-        } else {
-          // No matching type found
-          showCard = false;
+      // Get the card's types
+      const cardTypes = card.dataset.types ? card.dataset.types.split(', ') : [];
+      const cardSupertype = card.dataset.supertype;
+      const cardRarity = card.dataset.rarity;
+      
+      // Check type filter
+      let typeMatch = false;
+      
+      if (cardSupertype === 'Trainer' && filterState.types.has('Trainer')) {
+        typeMatch = true;
+      } else if (cardSupertype === 'Energy') {
+        if (card.dataset.subtype === 'Special' && filterState.types.has('Special Energy')) {
+          typeMatch = true;
+        } else if (cardTypes.some(type => filterState.types.has(type))) {
+          typeMatch = true;
         }
+      } else if (cardTypes.some(type => filterState.types.has(type))) {
+        typeMatch = true;
       }
       
-      // Rarity filtering - only apply if card passed type filtering
-      if (showCard && filterState.rarities.size > 0) {
-        const cardRarity = card.dataset.rarity;
-        if (!filterState.rarities.has(cardRarity)) {
-          showCard = false;
-        }
+      // If no type match, don't show the card
+      if (!typeMatch) showCard = false;
+      
+      // Check rarity filter
+      if (showCard && !filterState.rarities.has(cardRarity)) {
+        showCard = false;
       }
       
       // Show or hide the card
