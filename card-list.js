@@ -233,18 +233,37 @@ document.head.appendChild(style);
       justify-content: center;
       padding: 1em;
       z-index: 1000;
+      overflow-y: auto; /* Enable vertical scrolling */
     }
     .poke-embed-modal.show {
       display: flex;
     }
     .poke-modal-close {
-      position: absolute;
+      position: fixed; /* Changed from absolute to fixed */
       top: 20px;
       right: 30px;
       font-size: 28px;
       color: white;
       cursor: pointer;
       z-index: 1001;
+      background: rgba(0, 0, 0, 0.5); /* Add background for visibility */
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Mobile-specific adjustments */
+    @media (max-width: 768px) {
+      .poke-embed-modal {
+        align-items: flex-start; /* Align to top instead of center */
+        padding-top: 60px; /* Add space for the fixed close button */
+      }
+      .poke-embed {
+        max-height: none; /* Remove max height constraint */
+        margin-bottom: 2em; /* Add some bottom margin */
+      }
     }
   `;
   document.head.appendChild(style);
