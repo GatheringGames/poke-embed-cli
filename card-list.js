@@ -361,8 +361,7 @@ document.head.appendChild(style);
 
 
    function renderAdditionalCardDetails(dataset) {
-    const cardText = dataset.text;
-    const { hp, types, abilityName, abilityText, attacks, supertype, subtype } = dataset;
+    const { hp, types, abilityName, abilityText, attacks, supertype, subtype, text } = dataset;
   
     const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
     const hpInfo = hp ? `<div class="poke-hp">${hp} HP</div>` : "";
@@ -378,7 +377,9 @@ document.head.appendChild(style);
       ? `<div class="poke-ability"><strong>Ability: ${abilityName}</strong><br>${abilityText}</div>`
       : "";
       
-    const rulesText = cardText ? `<div class="poke-text">${cardText}</div>` : "";
+    // Only show rules text if it's not empty
+    const rulesText = text && text.trim() !== "" ? `<div class="poke-text">${text}</div>` : "";
+    
     let attacksHtml = "";
     try {
       const decoded = new DOMParser().parseFromString(attacks, "text/html").documentElement.textContent;

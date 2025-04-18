@@ -46,7 +46,7 @@ for card in cards:
     set_id = card.get("set", {}).get("id", "")
     image_url = card.get("images", {}).get("small", "")
     rarity = card.get("rarity", "")
-    text = " ".join(card.get("flavorText", []) or card.get("rules", []) or card.get("attacks", [{}])[0].get("text", "").splitlines())
+    text = " ".join(card.get("flavorText", []) or card.get("rules", []) or [""])
     hp = card.get("hp", "")
     types = ", ".join(card.get("types", []))
     ability = card.get("abilities", [{}])[0]
