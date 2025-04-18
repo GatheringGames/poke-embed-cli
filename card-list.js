@@ -17,11 +17,7 @@ style.textContent = `
   max-width: 800px;
   min-height: 360px;
   box-sizing: border-box;
-}
-@media (min-width: 768px) {
-  .poke-embed {
-    width: 800px;
-  }
+  flex-wrap: wrap;
 }
 .poke-card-image {
   flex: 0 0 250px;
@@ -101,6 +97,21 @@ style.textContent = `
 .poke-attack-damage {
   font-weight: normal;
   margin-left: 0.5em;
+}
+@media (max-width: 600px) {
+  .poke-embed {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .poke-info {
+    padding: 1em 0 0;
+  }
+
+  .poke-modal-close {
+    top: 12px;
+    right: 12px;
+  }
 }
 `;
 document.head.appendChild(style);
