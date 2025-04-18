@@ -665,7 +665,7 @@ document.head.appendChild(style);
           <div class="poke-info">
             <h3>${name}</h3>
             <div class="poke-rarity">
-              ${rarity}${rarityIcon}
+              ${rarityIcon}${rarity}
             </div>\n${renderAdditionalCardDetails(card.dataset)}
             
             <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
