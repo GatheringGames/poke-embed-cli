@@ -37,8 +37,10 @@ for card in cards:
     # Format the card number with leading zeros if it's numeric
     formatted_number = number
     if number and number.isdigit() and printed_total:
+        # Convert printed_total to string if it's an integer
+        printed_total_str = str(printed_total)
         # Determine the number of digits in the total
-        total_digits = len(printed_total)
+        total_digits = len(printed_total_str)
         # Pad the number with leading zeros to match
         formatted_number = number.zfill(total_digits)
     
