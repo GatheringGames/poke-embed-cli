@@ -269,11 +269,13 @@ document.head.appendChild(style);
         padding: 20px 10px;
       }
       .poke-embed {
-        width: 95% !important; /* Force width to be 95% of viewport */
-        max-width: 95% !important; /* Force max-width to be 95% of viewport */
+        width: 90% !important; /* Force width to be 90% of viewport */
+        max-width: 90% !important; /* Force max-width to be 90% of viewport */
         margin: 0 auto 60px auto; /* Center horizontally and add bottom margin */
         box-sizing: border-box; /* Include padding in width calculation */
         padding: 10px; /* Reduce padding to save space */
+        left: 0; /* Ensure proper centering */
+        right: 0; /* Ensure proper centering */
       }
       .poke-card-image {
         flex: 0 0 auto; /* Don't force width */
@@ -540,11 +542,11 @@ document.head.appendChild(style);
 
         // Handle modal closing
         const closeModal = () => {
-          const scrollY = parseInt(document.body.style.top || '0');
+          const scrollY = parseInt(document.body.style.top || '0') * -1; // Convert to positive number
           document.body.classList.remove("modal-open");
           document.body.style.top = '';
           modal.classList.remove("show");
-          window.scrollTo(0, -scrollY);
+          window.scrollTo(0, scrollY); // Scroll to the original position
         };
 
         document.getElementById("pokeModalClose").onclick = closeModal;
