@@ -170,13 +170,17 @@ body {
   text-align: left;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 }
 
 .rarity-icon {
-  height: 18px;
+  height: 16px;
   width: auto;
   vertical-align: middle;
+  max-width: none;
+  display: inline-block;
+  border-radius: 0;
+  overflow: visible;
 }
 
 .poke-text, .poke-ability, .poke-attack-text {
@@ -992,6 +996,7 @@ document.head.appendChild(style);
     // Map to icon URL - use the same base URL as the energy icons for consistency
     const iconPath = `https://js.gatheringgames.co.uk/symbols/${normalizedRarity}.svg`;
     
-    return `<img src="${iconPath}" alt="${rarity}" class="rarity-icon">`;
+    // Add style attributes directly to ensure proper display
+    return `<img src="${iconPath}" alt="${rarity}" class="rarity-icon" style="height:16px; max-width:none; border-radius:0; overflow:visible;">`;
   }
 })();
