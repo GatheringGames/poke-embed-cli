@@ -144,26 +144,19 @@ document.head.appendChild(style);
       overflow: hidden;
       position: fixed;
       width: 100%;
-      height: 100%;
-      touch-action: none;
-      -webkit-overflow-scrolling: none;
-      overscroll-behavior: none;
-    }
-    .poke-embed-modal {
-      overscroll-behavior: contain;
-      touch-action: pan-y pinch-zoom;
     }
     .poke-embed {
-  width: 100%;
-  max-width: 1000px;
-  min-height: 360px;
-  box-sizing: border-box;
-}
-@media (min-width: 768px) {
-  .poke-embed {
-    width: 800px;
-  }
-}
+      width: 100%;
+      max-width: 1000px;
+      min-height: 360px;
+      box-sizing: border-box;
+      margin: 0 auto;
+    }
+    @media (min-width: 768px) {
+      .poke-embed {
+        width: 800px;
+      }
+    }
     .poke-card-image img {
       width: 250px;
       border-radius: 4px;
@@ -243,12 +236,12 @@ document.head.appendChild(style);
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.75);
       display: none;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       padding: 0;
       z-index: 1000;
-      overflow-y: auto; /* Enable vertical scrolling */
-      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
     }
     .poke-embed-modal.show {
       display: flex;
@@ -272,8 +265,7 @@ document.head.appendChild(style);
     /* Mobile-specific adjustments */
     @media (max-width: 768px) {
       .poke-embed-modal {
-        align-items: flex-start; /* Align to top instead of center */
-        padding-top: 10px; /* Reduced padding at the top */
+        padding: 20px 10px;
       }
       .poke-embed {
         width: 95% !important; /* Force width to be 95% of viewport */
@@ -540,18 +532,6 @@ document.head.appendChild(style);
         document.body.style.top = `-${scrollY}px`;
         modal.classList.add("show");
         document.body.classList.add("modal-open");
-
-        // Prevent touch events from propagating when reaching scroll boundaries
-        modal.addEventListener('touchmove', (e) => {
-          const modalContent = modal.querySelector('.poke-embed');
-          const isAtTop = modalContent.scrollTop === 0;
-          const isAtBottom = modalContent.scrollHeight - modalContent.scrollTop === modalContent.clientHeight;
-          
-          if ((isAtTop && e.touches[0].clientY > 0) || 
-              (isAtBottom && e.touches[0].clientY < 0)) {
-            e.preventDefault();
-          }
-        }, { passive: false });
         setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
 
         // Handle modal closing
