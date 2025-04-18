@@ -1,6 +1,57 @@
 // == Pokemon Embed Script ==
 const style = document.createElement("style");
 style.textContent = `
+/* Base styles for page */
+body {
+  font-family: sans-serif;
+  padding: 20px;
+  background: #f5f5f5;
+}
+
+h1.pokemon-set-title {
+  text-align: center;
+}
+
+/* Card grid layout */
+.pokemon-set-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+  width: 90vw;
+  margin-left: calc(-45vw + 50%);
+  margin-right: calc(-45vw + 50%);
+}
+
+.pokemon-set-list-card {
+  text-align: center;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.pokemon-set-list-card:hover {
+  transform: scale(1.05);
+}
+
+.pokemon-set-list-card img {
+  width: 100%;
+  height: auto;
+}
+
+.pokemon-set-list-card p {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .pokemon-set-list-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* Style fix for modal layout */
 .poke-embed {
   position: relative;
@@ -36,14 +87,28 @@ style.textContent = `
   justify-content: center;
   padding: 0 1em;
   color: white;
+  text-align: left;
+}
+.poke-info h3 {
+  margin-top: 0;
+  color: white;
+  text-align: left;
 }
 .poke-stats {
   display: flex;
   gap: 1em;
   margin-bottom: 0.5em;
+  text-align: left;
 }
 .poke-type {
   font-style: italic;
+  text-align: left;
+}
+.poke-trainer-type {
+  font-style: italic;
+  color: #f0d048;
+  margin-bottom: 0.5em;
+  font-weight: bold;
 }
 .poke-ability {
   margin-top: 0.25em;
@@ -52,6 +117,7 @@ style.textContent = `
 .poke-attack {
   margin-top: 0.35em;
   margin-bottom: 0.35em;
+  text-align: left;
 }
 .poke-attack-text {
   margin-top: 0.1em;
@@ -59,33 +125,34 @@ style.textContent = `
 .poke-embed-modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  width: 100vw;
-  height: 100vh;
   background: rgba(0, 0, 0, 0.75);
   display: none;
-  align-items: center;
+  align-items: center; /* Center vertically on desktop */
   justify-content: center;
-  padding: 1em;
-  z-index: 9999;
+  padding: 0;
+  z-index: 9999; /* Higher z-index to ensure it's above Shopify menu */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  text-align: left; /* Change from center to left */
 }
 .poke-embed-modal.show {
   display: flex;
 }
 .poke-modal-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  position: fixed; /* Changed from absolute to fixed */
+  top: 10px;
+  right: 10px;
   font-size: 24px;
-  background: #222;
+  color: white;
+  cursor: pointer;
+  z-index: 1001;
+  background: rgba(0, 0, 0, 0.7); /* Add background for visibility */
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  cursor: pointer;
-  z-index: 10;
 }
 .energy-icon {
   width: 16px;
@@ -102,6 +169,54 @@ style.textContent = `
   font-weight: normal;
   margin-left: 0.5em;
 }
+
+.poke-rarity {
+  margin-bottom: 0.5em;
+  color: #ccc;
+  text-align: left;
+}
+.poke-text, .poke-ability, .poke-attack-text {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 0.5em;
+  text-align: left;
+}
+.poke-price-label {
+  font-weight: bold;
+  margin-top: 1.5em;
+  text-align: left;
+}
+.poke-currency-buttons, .poke-range-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.5em;
+  margin-top: 0.5em;
+}
+.poke-currency-buttons button, .poke-range-buttons button {
+  padding: 4px 8px;
+  cursor: pointer;
+  border: none;
+  background: #ccc;
+  border-radius: 4px;
+}
+.poke-currency-buttons button.active, .poke-range-buttons button.active {
+  background-color: #d8232f;
+  color: white;
+}
+canvas.poke-price-chart {
+  max-width: 100%;
+  margin: 1em auto 0 auto;
+  background: white;
+  border-radius: 4px;
+  display: block;
+}
+.poke-price-note {
+  font-size: 0.8em;
+  margin-top: 4px;
+  color: #ccc;
+  text-align: left;
+}
+
 @media (max-width: 600px) {
   .poke-embed {
     flex-direction: column;
@@ -117,11 +232,47 @@ style.textContent = `
     right: 12px;
   }
 }
-.poke-trainer-type {
-  font-style: italic;
-  color: #f0d048;
-  margin-bottom: 0.5em;
-  font-weight: bold;
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .poke-embed-modal {
+    align-items: flex-start; /* Top align on mobile */
+    padding: 20px 0; /* Remove horizontal padding */
+  }
+  .poke-embed {
+    width: 80% !important; /* Further reduce width for more margin */
+    max-width: 80% !important; /* Further reduce max-width for more margin */
+    margin: 0 auto 60px auto; /* Center horizontally and add bottom margin */
+    box-sizing: border-box; /* Include padding in width calculation */
+    padding: 10px; /* Reduce padding to save space */
+    float: none; /* Ensure proper centering */
+    display: block; /* Better for centering */
+  }
+  .poke-card-image {
+    flex: 0 0 auto; /* Don't force width */
+    width: 100%; /* Take full width in mobile view */
+    max-width: 200px; /* Limit maximum width */
+    margin: 0 auto; /* Center the image */
+  }
+  .poke-card-image img {
+    width: 100%; /* Make image responsive */
+    max-width: 200px; /* Limit maximum width */
+  }
+  .poke-info {
+    width: 100%; /* Take full width */
+    padding: 10px 0 0; /* Adjust padding */
+    text-align: left;
+  }
+  canvas.poke-price-chart {
+    height: auto !important; /* Make chart height responsive */
+    width: 100% !important; /* Make chart width responsive */
+  }
+  .poke-range-buttons, .poke-currency-buttons {
+    justify-content: center; /* Center these buttons only on mobile */
+  }
+  .poke-price-note {
+    text-align: center; /* Center the price note on mobile */
+  }
 }
 `;
 document.head.appendChild(style);
@@ -165,220 +316,29 @@ document.head.appendChild(style);
       .catch(() => ({ eur: 0.92, gbp: 0.78 }));
   }
 
-  const chartJsScript = document.createElement("script");
-  chartJsScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
-  document.head.appendChild(chartJsScript);
+  // Ensure Chart.js is loaded
+  const loadChartJs = () => {
+    return new Promise((resolve) => {
+      // Check if Chart is already defined globally
+      if (window.Chart) {
+        resolve();
+        return;
+      }
+      
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
+  };
+  
+  // Load Chart.js and then initialize
+  await loadChartJs();
   
   // Load cards in a more efficient order - do prices first since they're most visible
-  chartJsScript.onload = () => {
-    loadGridPrices();
-    initGridCardClicks();
-    initEmbeds();
-  };
-
-  // Add class to prevent body scrolling when modal is open
-  const style = document.createElement("style");
-  style.textContent = `
-    body.modal-open {
-      overflow: hidden !important;
-    }
-    .poke-embed-modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: none;
-      align-items: center; /* Center vertically on desktop */
-      justify-content: center;
-      padding: 0;
-      z-index: 9999; /* Higher z-index to ensure it's above Shopify menu */
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      text-align: left; /* Change from center to left */
-    }
-    .poke-embed-modal.show {
-      display: flex;
-    }
-    .poke-modal-close {
-      position: fixed; /* Changed from absolute to fixed */
-      top: 10px;
-      right: 10px;
-      font-size: 24px;
-      color: white;
-      cursor: pointer;
-      z-index: 1001;
-      background: rgba(0, 0, 0, 0.7); /* Add background for visibility */
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .poke-embed {
-      width: 100%;
-      max-width: 1000px;
-      min-height: 360px;
-      box-sizing: border-box;
-      margin: 0 auto;
-    }
-    @media (min-width: 768px) {
-      .poke-embed {
-        width: 800px;
-      }
-    }
-    .poke-card-image img {
-      width: 250px;
-      border-radius: 4px;
-      cursor: zoom-in;
-      display: block;
-      margin: 0 auto;
-    }
-    .poke-info {
-      flex: 1;
-      min-width: 200px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      text-align: left;
-    }
-    .poke-info h3 {
-      margin-top: 0;
-      color: white;
-      text-align: left;
-    }
-    .poke-rarity {
-      margin-bottom: 0.5em;
-      color: #ccc;
-      text-align: left;
-    }
-    .poke-text, .poke-ability, .poke-attack-text {
-      font-size: 14px;
-      line-height: 1.4;
-      margin-bottom: 0.5em;
-      text-align: left;
-    }
-    .poke-price-label {
-      font-weight: bold;
-      margin-top: 1.5em;
-      text-align: left;
-    }
-    .poke-currency-buttons, .poke-range-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 0.5em;
-      margin-top: 0.5em;
-    }
-    .poke-currency-buttons button, .poke-range-buttons button {
-      padding: 4px 8px;
-      cursor: pointer;
-      border: none;
-      background: #ccc;
-      border-radius: 4px;
-    }
-    .poke-currency-buttons button.active, .poke-range-buttons button.active {
-      background-color: #d8232f;
-      color: white;
-    }
-    canvas.poke-price-chart {
-      max-width: 100%;
-      margin: 1em auto 0 auto;
-      background: white;
-      border-radius: 4px;
-      display: block;
-    }
-    .poke-price-note {
-      font-size: 0.8em;
-      margin-top: 4px;
-      color: #ccc;
-      text-align: left;
-    }
-    .poke-stats {
-      text-align: left;
-    }
-    .poke-type {
-      text-align: left;
-    }
-    .poke-attack {
-      text-align: left;
-    }
-    @media (max-width: 768px) {
-      /* Remove nested media query */
-    }
-    .poke-embed-modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: none;
-      align-items: center; /* Center vertically on desktop */
-      justify-content: center;
-      padding: 0;
-      z-index: 9999; /* Higher z-index to ensure it's above Shopify menu */
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      text-align: left; /* Change from center to left */
-    }
-    .poke-embed-modal.show {
-      display: flex;
-    }
-    .poke-modal-close {
-      position: fixed; /* Changed from absolute to fixed */
-      top: 10px;
-      right: 10px;
-      font-size: 24px;
-      color: white;
-      cursor: pointer;
-      z-index: 1001;
-      background: rgba(0, 0, 0, 0.7); /* Add background for visibility */
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    /* Mobile-specific adjustments */
-    @media (max-width: 768px) {
-      .poke-embed-modal {
-        align-items: flex-start; /* Top align on mobile */
-        padding: 20px 0; /* Remove horizontal padding */
-      }
-      .poke-embed {
-        width: 80% !important; /* Further reduce width for more margin */
-        max-width: 80% !important; /* Further reduce max-width for more margin */
-        margin: 0 auto 60px auto; /* Center horizontally and add bottom margin */
-        box-sizing: border-box; /* Include padding in width calculation */
-        padding: 10px; /* Reduce padding to save space */
-        float: none; /* Ensure proper centering */
-        display: block; /* Better for centering */
-      }
-      .poke-card-image {
-        flex: 0 0 auto; /* Don't force width */
-        width: 100%; /* Take full width in mobile view */
-        max-width: 200px; /* Limit maximum width */
-        margin: 0 auto; /* Center the image */
-      }
-      .poke-card-image img {
-        width: 100%; /* Make image responsive */
-        max-width: 200px; /* Limit maximum width */
-      }
-      .poke-info {
-        width: 100%; /* Take full width */
-        padding: 10px 0 0; /* Adjust padding */
-        text-align: left;
-      }
-      canvas.poke-price-chart {
-        height: auto !important; /* Make chart height responsive */
-        width: 100% !important; /* Make chart width responsive */
-      }
-      .poke-range-buttons, .poke-currency-buttons {
-        justify-content: center; /* Center these buttons only on mobile */
-      }
-      .poke-price-note {
-        text-align: center; /* Center the price note on mobile */
-      }
-    }
-  `;
-  document.head.appendChild(style);
+  loadGridPrices();
+  initGridCardClicks();
+  initEmbeds();
 
   const ENERGY_ICON_URLS = {
     G: "https://js.gatheringgames.co.uk/symbols/grass.svg",

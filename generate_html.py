@@ -18,155 +18,8 @@ html = '''
 <head>
   <meta charset="UTF-8">
   <title>Journey Together Set List</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    h1 {
-      text-align: center;
-    }
-    .pokemon-set-list-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 24px;
-      width: 90vw;
-      margin-left: calc(-45vw + 50%);
-      margin-right: calc(-45vw + 50%);
-    }
-    .pokemon-set-list-card {
-      text-align: center;
-      background: white;
-      padding: 10px;
-      border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
-      cursor: pointer;
-    }
-    .pokemon-set-list-card:hover {
-      transform: scale(1.05);
-    }
-    .pokemon-set-list-card img {
-      width: 100%;
-      height: auto;
-    }
-    .pokemon-set-list-card p {
-      margin: 8px 0 0;
-      font-size: 14px;
-    }
-
-    @media (max-width: 600px) {
-      .pokemon-set-list-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    .poke-embed-modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 1em;
-    }
-
-    .poke-embed {
-      background: #394042;
-      color: white;
-      border-radius: 8px;
-      padding: 1em;
-      display: flex;
-      gap: 1em;
-      border: 2px solid #5c696d;
-      align-items: center;
-      max-width: 1000px;
-      width: 100%;
-    }
-
-    .poke-card-image img {
-      width: 250px;
-      border-radius: 4px;
-      cursor: zoom-in;
-      display: block;
-      margin: 0 auto;
-    }
-
-    .poke-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .poke-info h3 {
-      margin-top: 0;
-      color: white;
-    }
-
-    .poke-rarity {
-      margin-bottom: 0.5em;
-      color: #ccc;
-    }
-
-    .poke-text {
-      font-size: 14px;
-      line-height: 1.4;
-      margin-bottom: 0.5em;
-    }
-
-    .poke-price-label {
-      font-weight: bold;
-      margin-top: 0.5em;
-    }
-
-    .poke-currency-buttons, .poke-range-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 0.5em;
-      margin-top: 0.5em;
-    }
-
-    .poke-currency-buttons button, .poke-range-buttons button {
-      padding: 4px 8px;
-      cursor: pointer;
-      border: none;
-      background: #ccc;
-      border-radius: 4px;
-    }
-
-    .poke-currency-buttons button.active, .poke-range-buttons button.active {
-      background-color: #d8232f;
-      color: white;
-    }
-
-    canvas.poke-price-chart {
-      max-width: 100%;
-      margin: 1em auto 0 auto;
-      background: white;
-      border-radius: 4px;
-      display: block;
-    }
-
-    .poke-price-note {
-      font-size: 0.8em;
-      margin-top: 4px;
-      color: #ccc;
-      text-align: center;
-    }
-
-    @media (max-width: 768px) {
-      .poke-embed {
-        flex-direction: column;
-        align-items: center;
-      }
-    }
-  </style>
 </head>
-<body>
-  <h1>Journey Together - Complete Set List</h1>
-  <div class="pokemon-set-list-grid">
+<div class="pokemon-set-list-grid">
 '''
 ENERGY_SYMBOLS = {
     "Grass": "G",
@@ -248,13 +101,8 @@ for card in cards:
 
 # Modal container
 html += '''
-  </div>
-
-  <div class="poke-embed-modal" id="pokeEmbedModal"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://js.gatheringgames.co.uk/pokemon-embed.js"></script>
-</body>
+</div>
+<div class="poke-embed-modal" id="pokeEmbedModal"></div>
 </html>
 '''
 
