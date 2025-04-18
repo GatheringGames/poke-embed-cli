@@ -231,24 +231,25 @@ document.head.appendChild(style);
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 1em;
+      padding: 0;
       z-index: 1000;
       overflow-y: auto; /* Enable vertical scrolling */
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
     .poke-embed-modal.show {
       display: flex;
     }
     .poke-modal-close {
       position: fixed; /* Changed from absolute to fixed */
-      top: 20px;
-      right: 30px;
-      font-size: 28px;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
       color: white;
       cursor: pointer;
       z-index: 1001;
-      background: rgba(0, 0, 0, 0.5); /* Add background for visibility */
-      width: 40px;
-      height: 40px;
+      background: rgba(0, 0, 0, 0.7); /* Add background for visibility */
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -258,11 +259,32 @@ document.head.appendChild(style);
     @media (max-width: 768px) {
       .poke-embed-modal {
         align-items: flex-start; /* Align to top instead of center */
-        padding-top: 60px; /* Add space for the fixed close button */
+        padding-top: 10px; /* Reduced padding at the top */
       }
       .poke-embed {
-        max-height: none; /* Remove max height constraint */
-        margin-bottom: 2em; /* Add some bottom margin */
+        width: 95% !important; /* Force width to be 95% of viewport */
+        max-width: 95% !important; /* Force max-width to be 95% of viewport */
+        margin: 0 auto 60px auto; /* Center horizontally and add bottom margin */
+        box-sizing: border-box; /* Include padding in width calculation */
+        padding: 10px; /* Reduce padding to save space */
+      }
+      .poke-card-image {
+        flex: 0 0 auto; /* Don't force width */
+        width: 100%; /* Take full width in mobile view */
+        max-width: 200px; /* Limit maximum width */
+        margin: 0 auto; /* Center the image */
+      }
+      .poke-card-image img {
+        width: 100%; /* Make image responsive */
+        max-width: 200px; /* Limit maximum width */
+      }
+      .poke-info {
+        width: 100%; /* Take full width */
+        padding: 10px 0 0; /* Adjust padding */
+      }
+      canvas.poke-price-chart {
+        height: auto !important; /* Make chart height responsive */
+        width: 100% !important; /* Make chart width responsive */
       }
     }
   `;
