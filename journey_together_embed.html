@@ -4,155 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Journey Together Set List</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    h1 {
-      text-align: center;
-    }
-    .pokemon-set-list-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 24px;
-      width: 90vw;
-      margin-left: calc(-45vw + 50%);
-      margin-right: calc(-45vw + 50%);
-    }
-    .pokemon-set-list-card {
-      text-align: center;
-      background: white;
-      padding: 10px;
-      border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
-      cursor: pointer;
-    }
-    .pokemon-set-list-card:hover {
-      transform: scale(1.05);
-    }
-    .pokemon-set-list-card img {
-      width: 100%;
-      height: auto;
-    }
-    .pokemon-set-list-card p {
-      margin: 8px 0 0;
-      font-size: 14px;
-    }
-
-    @media (max-width: 600px) {
-      .pokemon-set-list-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    .poke-embed-modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 1em;
-    }
-
-    .poke-embed {
-      background: #394042;
-      color: white;
-      border-radius: 8px;
-      padding: 1em;
-      display: flex;
-      gap: 1em;
-      border: 2px solid #5c696d;
-      align-items: center;
-      max-width: 1000px;
-      width: 100%;
-    }
-
-    .poke-card-image img {
-      width: 250px;
-      border-radius: 4px;
-      cursor: zoom-in;
-      display: block;
-      margin: 0 auto;
-    }
-
-    .poke-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .poke-info h3 {
-      margin-top: 0;
-      color: white;
-    }
-
-    .poke-rarity {
-      margin-bottom: 0.5em;
-      color: #ccc;
-    }
-
-    .poke-text {
-      font-size: 14px;
-      line-height: 1.4;
-      margin-bottom: 0.5em;
-    }
-
-    .poke-price-label {
-      font-weight: bold;
-      margin-top: 0.5em;
-    }
-
-    .poke-currency-buttons, .poke-range-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 0.5em;
-      margin-top: 0.5em;
-    }
-
-    .poke-currency-buttons button, .poke-range-buttons button {
-      padding: 4px 8px;
-      cursor: pointer;
-      border: none;
-      background: #ccc;
-      border-radius: 4px;
-    }
-
-    .poke-currency-buttons button.active, .poke-range-buttons button.active {
-      background-color: #d8232f;
-      color: white;
-    }
-
-    canvas.poke-price-chart {
-      max-width: 100%;
-      margin: 1em auto 0 auto;
-      background: white;
-      border-radius: 4px;
-      display: block;
-    }
-
-    .poke-price-note {
-      font-size: 0.8em;
-      margin-top: 4px;
-      color: #ccc;
-      text-align: center;
-    }
-
-    @media (max-width: 768px) {
-      .poke-embed {
-        flex-direction: column;
-        align-items: center;
-      }
-    }
-  </style>
 </head>
-<body>
-  <h1>Journey Together - Complete Set List</h1>
-  <div class="pokemon-set-list-grid">
+<div class="pokemon-set-list-grid">
 
         <div class="pokemon-set-list-card"
                 data-id="sv9-1"
@@ -183,7 +36,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/2.png"
                 data-rarity="Common"
-                data-text="During your opponent's next turn, prevent all damage done to this Pokémon by attacks if that damage is 60 or less."
+                data-text=""
                 data-hp="90"
                 data-types="Grass"
                 data-ability-name=""
@@ -205,7 +58,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/3.png"
                 data-rarity="Rare"
-                data-text="Flip 4 coins. This attack does 60 damage for each heads. If at least 2 of them are heads, your opponent's Active Pokémon is now Paralyzed."
+                data-text=""
                 data-hp="120"
                 data-types="Grass"
                 data-ability-name=""
@@ -227,7 +80,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/4.png"
                 data-rarity="Common"
-                data-text="Heal from this Pokémon the same amount of damage you did to your opponent's Active Pokémon."
+                data-text=""
                 data-hp="70"
                 data-types="Grass"
                 data-ability-name=""
@@ -249,7 +102,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/5.png"
                 data-rarity="Common"
-                data-text="Your opponent's Active Pokémon is now Asleep."
+                data-text=""
                 data-hp="120"
                 data-types="Grass"
                 data-ability-name=""
@@ -315,7 +168,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/8.png"
                 data-rarity="Uncommon"
-                data-text="During your opponent's next turn, the Defending Pokémon can't retreat."
+                data-text=""
                 data-hp="110"
                 data-types="Grass"
                 data-ability-name="Exploding Needles"
@@ -337,7 +190,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/9.png"
                 data-rarity="Common"
-                data-text="Switch out your opponent's Active Pokémon to the Bench. (Your opponent chooses the new Active Pokémon.)"
+                data-text=""
                 data-hp="60"
                 data-types="Grass"
                 data-ability-name=""
@@ -359,7 +212,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/10.png"
                 data-rarity="Common"
-                data-text="Your opponent's Active Pokémon is now Asleep."
+                data-text=""
                 data-hp="50"
                 data-types="Grass"
                 data-ability-name=""
@@ -403,7 +256,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/12.png"
                 data-rarity="Common"
-                data-text="Flip a coin. If heads, during your opponent's next turn, prevent all damage done to this Pokémon by attacks."
+                data-text=""
                 data-hp="70"
                 data-types="Grass"
                 data-ability-name=""
@@ -425,7 +278,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/13.png"
                 data-rarity="Uncommon"
-                data-text="Your opponent's Active Pokémon is now Confused and Poisoned. Switch this Pokémon with 1 of your Benched Pokémon."
+                data-text=""
                 data-hp="100"
                 data-types="Grass"
                 data-ability-name=""
@@ -447,7 +300,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/14.png"
                 data-rarity="Common"
-                data-text="Flip a coin. If heads, discard an Energy from your opponent's Active Pokémon."
+                data-text=""
                 data-hp="90"
                 data-types="Grass"
                 data-ability-name=""
@@ -469,7 +322,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/15.png"
                 data-rarity="Uncommon"
-                data-text="Heal 30 damage from this Pokémon."
+                data-text=""
                 data-hp="120"
                 data-types="Grass"
                 data-ability-name=""
@@ -491,7 +344,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/16.png"
                 data-rarity="Common"
-                data-text="Flip 3 coins. This attack does 10 damage for each heads."
+                data-text=""
                 data-hp="60"
                 data-types="Grass"
                 data-ability-name=""
@@ -513,7 +366,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/17.png"
                 data-rarity="Common"
-                data-text="Flip a coin. If heads, this attack does 30 more damage, and heal 30 damage from this Pokémon."
+                data-text=""
                 data-hp="90"
                 data-types="Grass"
                 data-ability-name=""
@@ -535,7 +388,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/18.png"
                 data-rarity="Rare"
-                data-text="If your opponent's Active Pokémon is a Pokémon ex, this attack does 90 more damage."
+                data-text=""
                 data-hp="160"
                 data-types="Grass"
                 data-ability-name="Showtime"
@@ -579,7 +432,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/20.png"
                 data-rarity="Common"
-                data-text="Flip a coin. If heads, your opponent's Active Pokémon is now Burned."
+                data-text=""
                 data-hp="80"
                 data-types="Fire"
                 data-ability-name=""
@@ -601,7 +454,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/21.png"
                 data-rarity="Rare"
-                data-text="Flip a coin. If heads, your opponent's Active Pokémon is now Burned."
+                data-text=""
                 data-hp="130"
                 data-types="Fire"
                 data-ability-name="Magma Surge"
@@ -733,7 +586,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/27.png"
                 data-rarity="Uncommon"
-                data-text="This attack does 30 damage for each Basic Energy card in your opponent's discard pile."
+                data-text=""
                 data-hp="140"
                 data-types="Fire"
                 data-ability-name=""
@@ -843,7 +696,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/32.png"
                 data-rarity="Uncommon"
-                data-text="Search your deck for up to 2 Basic Water Energy cards and attach them to this Pokémon. Then, shuffle your deck."
+                data-text=""
                 data-hp="110"
                 data-types="Water"
                 data-ability-name=""
@@ -865,7 +718,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/33.png"
                 data-rarity="Common"
-                data-text="This attack does 10 damage for each damage counter on this Pokémon."
+                data-text=""
                 data-hp="60"
                 data-types="Water"
                 data-ability-name=""
@@ -887,7 +740,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/34.png"
                 data-rarity="Uncommon"
-                data-text="You may put an Energy attached to your opponent's Active Pokémon into their hand."
+                data-text=""
                 data-hp="110"
                 data-types="Water"
                 data-ability-name=""
@@ -931,7 +784,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/36.png"
                 data-rarity="Common"
-                data-text="During your next turn, this Pokémon can't attack."
+                data-text=""
                 data-hp="90"
                 data-types="Water"
                 data-ability-name=""
@@ -1041,7 +894,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/41.png"
                 data-rarity="Rare"
-                data-text="This attack does 50 more damage for each Water Energy attached to this Pokémon."
+                data-text=""
                 data-hp="240"
                 data-types="Water"
                 data-ability-name=""
@@ -1151,7 +1004,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/46.png"
                 data-rarity="Uncommon"
-                data-text="Flip a coin until you get tails. This attack does 70 damage for each heads."
+                data-text=""
                 data-hp="180"
                 data-types="Lightning"
                 data-ability-name=""
@@ -1173,7 +1026,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/47.png"
                 data-rarity="Common"
-                data-text="This attack does 20 more damage for each Lightning Energy attached to all of your Iono's Pokémon."
+                data-text=""
                 data-hp="70"
                 data-types="Lightning"
                 data-ability-name=""
@@ -1195,7 +1048,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/48.png"
                 data-rarity="Uncommon"
-                data-text="This Pokémon does 100 damage to itself. Flip a coin. If heads, your opponent's Active Pokémon is Knocked Out."
+                data-text=""
                 data-hp="100"
                 data-types="Lightning"
                 data-ability-name=""
@@ -1217,7 +1070,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/49.png"
                 data-rarity="Common"
-                data-text="Before doing damage, discard all Pokémon Tools from your opponent's Active Pokémon. If you discarded a Pokémon Tool in this way, your opponent's Active Pokémon is now Paralyzed."
+                data-text=""
                 data-hp="40"
                 data-types="Lightning"
                 data-ability-name=""
@@ -1239,7 +1092,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/50.png"
                 data-rarity="Common"
-                data-text="Flip a coin. If heads, during your opponent's next turn, prevent all damage from and effects of attacks done to this Pokémon."
+                data-text=""
                 data-hp="80"
                 data-types="Lightning"
                 data-ability-name=""
@@ -1327,7 +1180,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/54.png"
                 data-rarity="Common"
-                data-text="Flip a coin. If heads, this attack does 20 more damage."
+                data-text=""
                 data-hp="60"
                 data-types="Lightning"
                 data-ability-name=""
@@ -1393,7 +1246,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/57.png"
                 data-rarity="Uncommon"
-                data-text="If any of your Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 90 more damage."
+                data-text=""
                 data-hp="120"
                 data-types="Psychic"
                 data-ability-name=""
@@ -1415,7 +1268,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/58.png"
                 data-rarity="Common"
-                data-text="Shuffle your hand into your deck. Then, draw a card for each card in your opponent's hand."
+                data-text=""
                 data-hp="90"
                 data-types="Psychic"
                 data-ability-name=""
@@ -1459,7 +1312,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/60.png"
                 data-rarity="Uncommon"
-                data-text="Your opponent chooses 3 cards from their hand and shuffles those cards into their deck."
+                data-text=""
                 data-hp="90"
                 data-types="Psychic"
                 data-ability-name=""
@@ -1569,7 +1422,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/65.png"
                 data-rarity="Common"
-                data-text="Search your deck for up to 2 Basic Pokémon and put them onto your Bench. Then, shuffle your deck."
+                data-text=""
                 data-hp="80"
                 data-types="Psychic"
                 data-ability-name=""
@@ -1591,7 +1444,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/66.png"
                 data-rarity="Common"
-                data-text="Heal 10 damage from this Pokémon."
+                data-text=""
                 data-hp="30"
                 data-types="Psychic"
                 data-ability-name=""
@@ -1635,7 +1488,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/68.png"
                 data-rarity="Common"
-                data-text="You may search your deck for any number of Basic Lillie's Pokémon and put them onto your Bench. Then, shuffle your deck."
+                data-text=""
                 data-hp="70"
                 data-types="Psychic"
                 data-ability-name=""
@@ -1679,7 +1532,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/70.png"
                 data-rarity="Common"
-                data-text="During your opponent's next turn, the Defending Pokémon can't retreat."
+                data-text=""
                 data-hp="130"
                 data-types="Psychic"
                 data-ability-name=""
@@ -1745,7 +1598,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/73.png"
                 data-rarity="Uncommon"
-                data-text="This attack does 50 damage for each Colorless in your opponent's Active Pokémon's Retreat Cost."
+                data-text=""
                 data-hp="170"
                 data-types="Psychic"
                 data-ability-name=""
@@ -1833,7 +1686,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/77.png"
                 data-rarity="Common"
-                data-text="Search your deck for up to 2 Basic Pokémon and put them onto your Bench. Then, shuffle your deck."
+                data-text=""
                 data-hp="70"
                 data-types="Fighting"
                 data-ability-name=""
@@ -1899,7 +1752,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/80.png"
                 data-rarity="Common"
-                data-text="Flip a coin. If heads, discard an Energy from your opponent's Active Pokémon."
+                data-text=""
                 data-hp="70"
                 data-types="Fighting"
                 data-ability-name=""
@@ -1921,7 +1774,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/81.png"
                 data-rarity="Common"
-                data-text="This Pokémon also does 20 damage to itself."
+                data-text=""
                 data-hp="90"
                 data-types="Fighting"
                 data-ability-name=""
@@ -1943,7 +1796,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/82.png"
                 data-rarity="Rare"
-                data-text="This attack's damage isn't affected by Resistance."
+                data-text=""
                 data-hp="130"
                 data-types="Fighting"
                 data-ability-name="Rock Armor"
@@ -1987,7 +1840,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/84.png"
                 data-rarity="Common"
-                data-text="Look at the top card of your deck. You may discard that card."
+                data-text=""
                 data-hp="70"
                 data-types="Fighting"
                 data-ability-name=""
@@ -2009,7 +1862,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/85.png"
                 data-rarity="Rare"
-                data-text="This attack does 40 more damage for each damage counter on your opponent's Active Pokémon."
+                data-text=""
                 data-hp="120"
                 data-types="Fighting"
                 data-ability-name="Spike-Clad"
@@ -2031,7 +1884,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/86.png"
                 data-rarity="Common"
-                data-text="Search your deck for a Stadium card, reveal it, and put it into your hand. Then, shuffle your deck."
+                data-text=""
                 data-hp="80"
                 data-types="Fighting"
                 data-ability-name=""
@@ -2053,7 +1906,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/87.png"
                 data-rarity="Uncommon"
-                data-text="During your opponent's next turn, the Defending Pokémon can't retreat."
+                data-text=""
                 data-hp="140"
                 data-types="Fighting"
                 data-ability-name=""
@@ -2119,7 +1972,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/90.png"
                 data-rarity="Uncommon"
-                data-text="Flip 2 coins. For each heads, discard an Energy from your opponent's Active Pokémon."
+                data-text=""
                 data-hp="120"
                 data-types="Fighting"
                 data-ability-name=""
@@ -2163,7 +2016,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/92.png"
                 data-rarity="Uncommon"
-                data-text="Your opponent's Active Pokémon is now Confused."
+                data-text=""
                 data-hp="130"
                 data-types="Darkness"
                 data-ability-name=""
@@ -2185,7 +2038,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/93.png"
                 data-rarity="Common"
-                data-text="Flip a coin. If heads, this attack does 20 more damage."
+                data-text=""
                 data-hp="60"
                 data-types="Darkness"
                 data-ability-name=""
@@ -2229,7 +2082,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/95.png"
                 data-rarity="Rare"
-                data-text="Discard the top 2 cards of your opponent's deck."
+                data-text=""
                 data-hp="190"
                 data-types="Darkness"
                 data-ability-name="Daunting Gaze"
@@ -2251,7 +2104,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/96.png"
                 data-rarity="Common"
-                data-text="Your opponent reveals their hand, and you choose a card you find there and put it on the bottom of their deck."
+                data-text=""
                 data-hp="70"
                 data-types="Darkness"
                 data-ability-name=""
@@ -2317,7 +2170,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/99.png"
                 data-rarity="Uncommon"
-                data-text="Choose 1 of your opponent's Active Pokémon's attacks. During your opponent's next turn, that Pokémon can't use that attack."
+                data-text=""
                 data-hp="140"
                 data-types="Darkness"
                 data-ability-name=""
@@ -2405,7 +2258,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/103.png"
                 data-rarity="Common"
-                data-text="Flip 2 coins. This attack does 10 damage for each heads."
+                data-text=""
                 data-hp="60"
                 data-types="Metal"
                 data-ability-name=""
@@ -2427,7 +2280,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/104.png"
                 data-rarity="Common"
-                data-text="Your opponent's Active Pokémon is now Confused."
+                data-text=""
                 data-hp="90"
                 data-types="Metal"
                 data-ability-name=""
@@ -2493,7 +2346,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/107.png"
                 data-rarity="Rare"
-                data-text="Draw 2 cards."
+                data-text=""
                 data-hp="90"
                 data-types="Metal"
                 data-ability-name="Auto Heal"
@@ -2515,7 +2368,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/108.png"
                 data-rarity="Uncommon"
-                data-text="This attack also does 50 damage to 1 of your opponent's Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+                data-text=""
                 data-hp="170"
                 data-types="Metal"
                 data-ability-name=""
@@ -2625,7 +2478,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/113.png"
                 data-rarity="Common"
-                data-text="During your opponent's next turn, this Pokémon takes 30 less damage from attacks (after applying Weakness and Resistance)."
+                data-text=""
                 data-hp="100"
                 data-types="Dragon"
                 data-ability-name=""
@@ -2669,7 +2522,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/115.png"
                 data-rarity="Common"
-                data-text="Attach a Basic Fire Energy card from your discard pile to 1 of your Dragon Pokémon."
+                data-text=""
                 data-hp="120"
                 data-types="Dragon"
                 data-ability-name=""
@@ -2691,7 +2544,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/116.png"
                 data-rarity="Rare"
-                data-text="This attack does 20 damage for each damage counter on this Pokémon."
+                data-text=""
                 data-hp="130"
                 data-types="Dragon"
                 data-ability-name=""
@@ -2713,7 +2566,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/117.png"
                 data-rarity="Rare"
-                data-text="This Pokémon also does 80 damage to itself."
+                data-text=""
                 data-hp="150"
                 data-types="Colorless"
                 data-ability-name="Extra Helpings"
@@ -2779,7 +2632,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/120.png"
                 data-rarity="Common"
-                data-text="Switch this Pokémon with 1 of your Benched Pokémon."
+                data-text=""
                 data-hp="70"
                 data-types="Colorless"
                 data-ability-name=""
@@ -2823,7 +2676,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/122.png"
                 data-rarity="Common"
-                data-text="Flip a coin. If heads, during your opponent's next turn, prevent all damage from and effects of attacks done to this Pokémon."
+                data-text=""
                 data-hp="80"
                 data-types="Colorless"
                 data-ability-name=""
@@ -2845,7 +2698,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/123.png"
                 data-rarity="Common"
-                data-text="Discard a card from your hand. If you do, draw 3 cards."
+                data-text=""
                 data-hp="110"
                 data-types="Colorless"
                 data-ability-name=""
@@ -2867,7 +2720,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/124.png"
                 data-rarity="Common"
-                data-text="Put a Supporter card from your discard pile into your hand."
+                data-text=""
                 data-hp="110"
                 data-types="Colorless"
                 data-ability-name=""
@@ -2933,7 +2786,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/127.png"
                 data-rarity="Common"
-                data-text="Draw a card."
+                data-text=""
                 data-hp="60"
                 data-types="Colorless"
                 data-ability-name=""
@@ -2955,7 +2808,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/128.png"
                 data-rarity="Rare"
-                data-text="Your opponent's Active Pokémon is now Confused."
+                data-text=""
                 data-hp="110"
                 data-types="Colorless"
                 data-ability-name="Tuning Echo"
@@ -2977,7 +2830,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/129.png"
                 data-rarity="Common"
-                data-text="Both Active Pokémon are now Asleep. During your next turn, attacks used by this Pokémon do 100 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance)."
+                data-text=""
                 data-hp="100"
                 data-types="Colorless"
                 data-ability-name=""
@@ -3021,7 +2874,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/131.png"
                 data-rarity="Common"
-                data-text="Draw a card."
+                data-text=""
                 data-hp="60"
                 data-types="Colorless"
                 data-ability-name=""
@@ -3043,7 +2896,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/132.png"
                 data-rarity="Uncommon"
-                data-text="Draw 2 cards."
+                data-text=""
                 data-hp="120"
                 data-types="Colorless"
                 data-ability-name=""
@@ -3065,7 +2918,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/133.png"
                 data-rarity="Common"
-                data-text="During your opponent's next turn, attacks used by the Defending Pokémon do 20 less damage (before applying Weakness and Resistance)."
+                data-text=""
                 data-hp="60"
                 data-types="Colorless"
                 data-ability-name=""
@@ -3153,7 +3006,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/137.png"
                 data-rarity="Common"
-                data-text="Flip a coin until you get tails. This attack does 50 damage for each heads."
+                data-text=""
                 data-hp="110"
                 data-types="Colorless"
                 data-ability-name=""
@@ -3175,7 +3028,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/138.png"
                 data-rarity="Uncommon"
-                data-text="If your opponent doesn't have exactly 3 or 4 Prize cards remaining, this attack does nothing."
+                data-text=""
                 data-hp="110"
                 data-types="Colorless"
                 data-ability-name=""
@@ -3219,7 +3072,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/140.png"
                 data-rarity="Uncommon"
-                data-text="Flip a coin. If heads, during your opponent's next turn, the Defending Pokémon can't attack."
+                data-text=""
                 data-hp="120"
                 data-types="Colorless"
                 data-ability-name=""
@@ -3241,7 +3094,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/141.png"
                 data-rarity="Common"
-                data-text="Draw 2 cards."
+                data-text=""
                 data-hp="70"
                 data-types="Colorless"
                 data-ability-name=""
@@ -3659,7 +3512,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/160.png"
                 data-rarity="Illustration Rare"
-                data-text="During your opponent's next turn, the Defending Pokémon can't retreat."
+                data-text=""
                 data-hp="110"
                 data-types="Grass"
                 data-ability-name="Exploding Needles"
@@ -3681,7 +3534,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/161.png"
                 data-rarity="Illustration Rare"
-                data-text="Search your deck for up to 2 Basic Water Energy cards and attach them to this Pokémon. Then, shuffle your deck."
+                data-text=""
                 data-hp="110"
                 data-types="Water"
                 data-ability-name=""
@@ -3703,7 +3556,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/162.png"
                 data-rarity="Illustration Rare"
-                data-text="This attack does 50 more damage for each Water Energy attached to this Pokémon."
+                data-text=""
                 data-hp="240"
                 data-types="Water"
                 data-ability-name=""
@@ -3769,7 +3622,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/165.png"
                 data-rarity="Illustration Rare"
-                data-text="Search your deck for up to 2 Basic Pokémon and put them onto your Bench. Then, shuffle your deck."
+                data-text=""
                 data-hp="70"
                 data-types="Fighting"
                 data-ability-name=""
@@ -3791,7 +3644,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/166.png"
                 data-rarity="Illustration Rare"
-                data-text="This attack does 40 more damage for each damage counter on your opponent's Active Pokémon."
+                data-text=""
                 data-hp="120"
                 data-types="Fighting"
                 data-ability-name="Spike-Clad"
@@ -3813,7 +3666,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/167.png"
                 data-rarity="Illustration Rare"
-                data-text="This attack does 20 damage for each damage counter on this Pokémon."
+                data-text=""
                 data-hp="130"
                 data-types="Dragon"
                 data-ability-name=""
@@ -3857,7 +3710,7 @@
                 data-set="sv9"
                 data-image="https://images.pokemontcg.io/sv9/169.png"
                 data-rarity="Illustration Rare"
-                data-text="Draw a card."
+                data-text=""
                 data-hp="60"
                 data-types="Colorless"
                 data-ability-name=""
@@ -4334,11 +4187,6 @@
             </p>
         </div>
         
-  </div>
-
-  <div class="poke-embed-modal" id="pokeEmbedModal"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://js.gatheringgames.co.uk/pokemon-embed.js"></script>
-</body>
+</div>
+<div class="poke-embed-modal" id="pokeEmbedModal"></div>
 </html>

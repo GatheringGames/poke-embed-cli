@@ -268,6 +268,14 @@ canvas.poke-price-chart {
     text-align: center; /* Center the price note on mobile */
   }
 }
+
+.poke-flavor-text {
+  font-size: 14px;
+  font-style: italic;
+  color: #ccc;
+  margin: 0.5em 0;
+  text-align: left;
+}
 `;
 document.head.appendChild(style);
 (async () => {
@@ -370,6 +378,8 @@ document.head.appendChild(style);
     let cardTypeInfo = "";
     if (supertype === "Trainer") {
       cardTypeInfo = `<div class="poke-trainer-type">Trainer Card${subtype ? ` - ${subtype}` : ""}</div>`;
+    } else if (supertype === "Energy") {
+      cardTypeInfo = `<div class="poke-trainer-type">Energy Card${subtype ? ` - ${subtype}` : ""}</div>`;
     }
     
     // Only include the ability section if both abilityName and abilityText are present
@@ -377,8 +387,15 @@ document.head.appendChild(style);
       ? `<div class="poke-ability"><strong>Ability: ${abilityName}</strong><br>${abilityText}</div>`
       : "";
       
-    // Only show rules text if it's not empty
-    const rulesText = text && text.trim() !== "" ? `<div class="poke-text">${text}</div>` : "";
+    // Only show rules text if it's not empty and it's not for Pokémon cards
+    const rulesText = (text && text.trim() !== "" && supertype !== "Pokémon") 
+      ? `<div class="poke-text">${text}</div>` 
+      : "";
+    
+    // For Pokémon, only show flavor text
+    const flavorText = (text && text.trim() !== "" && supertype === "Pokémon") 
+      ? `<div class="poke-flavor-text">${text}</div>` 
+      : "";
     
     let attacksHtml = "";
     try {
@@ -410,6 +427,7 @@ document.head.appendChild(style);
       </div>
       ${cardTypeInfo}
       ${abilityInfo}
+      ${flavorText}
       ${rulesText}
       <div class="poke-attacks-container">
         ${attacksHtml}

@@ -11,16 +11,9 @@ cards = data["data"]
 # Create a folder for assets
 output_path = Path("journey_together_embed.html")
 
-# HTML header
-html = '''
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Journey Together Set List</title>
-</head>
-<div class="pokemon-set-list-grid">
-'''
+# Start HTML with just the grid
+html = '<div class="pokemon-set-list-grid">'
+
 ENERGY_SYMBOLS = {
     "Grass": "G",
     "Fire": "R",
@@ -46,7 +39,17 @@ for card in cards:
     set_id = card.get("set", {}).get("id", "")
     image_url = card.get("images", {}).get("small", "")
     rarity = card.get("rarity", "")
-    text = " ".join(card.get("flavorText", []) or card.get("rules", []) or [""])
+    
+    # Get card text (flavor text only, skip rules for Pokemon cards)
+    flavor_text = " ".join(card.get("flavorText", []))
+    rules_text = ""
+    
+    # Only include rules text for trainer cards and energy cards, not for Pokémon
+    if card.get("supertype", "") != "Pokémon":
+        rules_text = " ".join(card.get("rules", []))
+    
+    text = flavor_text or rules_text or ""
+    
     hp = card.get("hp", "")
     types = ", ".join(card.get("types", []))
     ability = card.get("abilities", [{}])[0]
@@ -99,11 +102,10 @@ for card in cards:
         </div>
         '''
 
-# Modal container
+# Just add the modal container div, don't close HTML
 html += '''
 </div>
 <div class="poke-embed-modal" id="pokeEmbedModal"></div>
-</html>
 '''
 
 # Write to file
