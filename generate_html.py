@@ -113,10 +113,17 @@ for card in cards:
         </div>
         '''
 
-# Just add the modal container div, don't close HTML
+# Add the modal container
 html += '''
 </div>
 <div class="poke-embed-modal" id="pokeEmbedModal"></div>
+'''
+
+# Add the Smart Snippet container
+html += '''
+<div class="dib-ss fr-deletable fr-draggable dib-custom-block" contenteditable="false" draggable="true" data-replace-ss-id="212">
+	<h2 class="toc-skip">Smart Snippet&trade; | Pokemon TCG Card List</h2>
+</div>
 '''
 
 # Write to file
