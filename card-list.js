@@ -197,7 +197,7 @@ document.head.appendChild(style);
     }
     .poke-currency-buttons, .poke-range-buttons {
       display: flex;
-      justify-content: flex-start;
+      justify-content: center;
       gap: 0.5em;
       margin-top: 0.5em;
     }
