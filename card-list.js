@@ -119,21 +119,50 @@ document.head.appendChild(style);
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvcHRueGt4dWxpZ3RoZnZlZmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MTY3MjcsImV4cCI6MjA1ODk5MjcyN30.4qh8BWbnwsrfbPHg7PfPG2B-0aTKpgipOATLqHq9MN0";
   const EXCHANGE_RATE_API = "https://api.exchangerate.host/latest?base=USD&symbols=EUR,GBP";
 
-  const exchangeRates = await fetch(EXCHANGE_RATE_API)
-    .then(r => r.json())
-    .then(data => ({
-      eur: data.rates.EUR,
-      gbp: data.rates.GBP
-    }))
-    .catch(() => ({ eur: 0.92, gbp: 0.78 }));
+  // Cache for price data to avoid duplicate fetches
+  const priceCache = new Map();
+  
+  // Cache for historical price data
+  const historicalPriceCache = new Map();
+
+  // Try to get exchange rates from localStorage first to reduce API calls
+  let exchangeRates;
+  const cachedRates = localStorage.getItem('pokeExchangeRates');
+  const ratesCacheTime = localStorage.getItem('pokeExchangeRatesTime');
+  const now = Date.now();
+  
+  // Use cached rates if they're less than 24 hours old
+  if (cachedRates && ratesCacheTime && (now - parseInt(ratesCacheTime)) < 86400000) {
+    exchangeRates = JSON.parse(cachedRates);
+    console.log("Using cached exchange rates");
+  } else {
+    // Fetch new rates and cache them
+    exchangeRates = await fetch(EXCHANGE_RATE_API)
+      .then(r => r.json())
+      .then(data => {
+        const rates = {
+          eur: data.rates.EUR,
+          gbp: data.rates.GBP
+        };
+        
+        // Cache the rates
+        localStorage.setItem('pokeExchangeRates', JSON.stringify(rates));
+        localStorage.setItem('pokeExchangeRatesTime', now.toString());
+        
+        return rates;
+      })
+      .catch(() => ({ eur: 0.92, gbp: 0.78 }));
+  }
 
   const chartJsScript = document.createElement("script");
   chartJsScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
   document.head.appendChild(chartJsScript);
+  
+  // Load cards in a more efficient order - do prices first since they're most visible
   chartJsScript.onload = () => {
-    initEmbeds();
-    initGridCardClicks();
     loadGridPrices();
+    initGridCardClicks();
+    initEmbeds();
   };
 
   // Add class to prevent body scrolling when modal is open
@@ -429,6 +458,11 @@ document.head.appendChild(style);
           backgroundColor: "rgba(216,35,47,0.2)",
           fill: true,
         }]
+      },
+      options: {
+        animation: false, // Disable animations for better performance
+        responsive: true,
+        maintainAspectRatio: true
       }
     });
 
@@ -498,22 +532,50 @@ document.head.appendChild(style);
 
     if (!modal) return;
 
-    cards.forEach(card => {
-      card.addEventListener("click", async () => {
-        const { id, name, set, number, image, rarity, text } = card.dataset;
-
+    // Pre-fetch historical price data for all visible cards
+    const visibleCards = Array.from(cards).filter(card => {
+      const rect = card.getBoundingClientRect();
+      return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+      );
+    }).slice(0, 10); // Just get the first 10 visible cards
+    
+    // Pre-fetch data for visible cards
+    const prefetchPromises = visibleCards.map(async card => {
+      const id = card.dataset.id;
+      if (historicalPriceCache.has(id)) return;
+      
+      try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
           headers: {
             apikey: SUPABASE_KEY,
             Authorization: `Bearer ${SUPABASE_KEY}`,
           },
-          
         });
+        
+        if (res.ok) {
+          const priceData = await res.json();
+          historicalPriceCache.set(id, {
+            prices: priceData.map(d => d.price_usd),
+            dates: priceData.map(d => d.date)
+          });
+        }
+      } catch (err) {
+        console.error("Error prefetching prices for card:", id);
+      }
+    });
+    
+    // Wait for prefetch to complete
+    await Promise.all(prefetchPromises);
 
-        const priceData = await res.json();
-        const prices = priceData.map(d => d.price_usd);
-        const dates = priceData.map(d => d.date);
+    cards.forEach(card => {
+      card.addEventListener("click", async () => {
+        const { id, name, set, number, image, rarity, text } = card.dataset;
 
+        // Show loading state in modal immediately
         modal.innerHTML = `
           <div class="poke-embed">
           <div class="poke-modal-close" id="pokeModalClose">✖</div>
@@ -551,9 +613,8 @@ document.head.appendChild(style);
         
         // Reset modal scroll position
         modal.scrollTop = 0;
-        setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
 
-        // Handle modal closing - restore scroll position
+        // Set up close handlers immediately
         const closeModal = () => {
           document.body.classList.remove("modal-open");
           modal.classList.remove("show");
@@ -571,6 +632,45 @@ document.head.appendChild(style);
         modal.onclick = (e) => {
           if (e.target === modal) closeModal();
         };
+
+        // Check if we already have the price data in the cache
+        let prices, dates;
+        
+        if (historicalPriceCache.has(id)) {
+          const cachedData = historicalPriceCache.get(id);
+          prices = cachedData.prices;
+          dates = cachedData.dates;
+          console.log("Using cached historical price data for card:", id);
+        } else {
+          // Fetch the price data if not in cache
+          try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
+              headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${SUPABASE_KEY}`,
+              },
+            });
+            
+            if (res.ok) {
+              const priceData = await res.json();
+              prices = priceData.map(d => d.price_usd);
+              dates = priceData.map(d => d.date);
+              
+              // Cache the results for future use
+              historicalPriceCache.set(id, { prices, dates });
+            } else {
+              console.error("Failed to fetch price data for card:", id);
+              prices = [0];
+              dates = [new Date().toISOString().split('T')[0]];
+            }
+          } catch (error) {
+            console.error("Error fetching prices for card:", id);
+            prices = [0];
+            dates = [new Date().toISOString().split('T')[0]];
+          }
+        }
+        
+        setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
       });
     });
   }
@@ -588,6 +688,26 @@ document.head.appendChild(style);
     // If no cards, exit early
     if (cardIds.length === 0) return;
     
+    // Only fetch prices for cards that are visible in viewport first
+    const visibleCards = Array.from(cards).filter(card => {
+      const rect = card.getBoundingClientRect();
+      return (
+        rect.top >= -200 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) + 200
+      );
+    });
+    
+    const visibleCardIds = visibleCards.map(card => card.dataset.id);
+    const remainingCardIds = cardIds.filter(id => !visibleCardIds.includes(id));
+    
+    // Process visible cards first, then handle remaining cards
+    await fetchPricesForIds(visibleCardIds, headers);
+    
+    // Then load the rest asynchronously
+    fetchPricesForIds(remainingCardIds, headers);
+  }
+  
+  async function fetchPricesForIds(cardIds, headers) {
     // Batch size for API requests
     const BATCH_SIZE = 20;
     
@@ -595,39 +715,35 @@ document.head.appendChild(style);
     for (let i = 0; i < cardIds.length; i += BATCH_SIZE) {
       const batchIds = cardIds.slice(i, i + BATCH_SIZE);
       
-      // Create a query string with all IDs in this batch
-      const idFilter = batchIds.map(id => `card_id.eq.${id}`).join(',');
+      // Skip IDs we already have in cache
+      const uncachedIds = batchIds.filter(id => !priceCache.has(id));
+      
+      // If all IDs are cached in this batch, just update the UI
+      if (uncachedIds.length === 0) {
+        updatePricesInUI(batchIds);
+        continue;
+      }
+      
+      // Create a query string with all uncached IDs in this batch
+      const idFilter = uncachedIds.map(id => `card_id.eq.${id}`).join(',');
       
       try {
         // Make a single request for the entire batch using OR filter
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=card_id,price_usd&or=(${idFilter})&order=date.desc&limit=${BATCH_SIZE}`, {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=card_id,price_usd&or=(${idFilter})&order=date.desc&limit=${uncachedIds.length}`, {
           headers,
         });
         
         if (res.ok) {
           const priceData = await res.json();
           
-          // Group by card_id and get the most recent price for each card
-          const latestPrices = {};
+          // Store data in cache and update the UI
           priceData.forEach(item => {
-            if (!latestPrices[item.card_id]) {
-              latestPrices[item.card_id] = item.price_usd;
+            if (!priceCache.has(item.card_id)) {
+              priceCache.set(item.card_id, item.price_usd);
             }
           });
           
-          // Update the UI with the prices we received
-          batchIds.forEach(cardId => {
-            const card = document.querySelector(`.pokemon-set-list-card[data-id="${cardId}"]`);
-            if (!card) return;
-            
-            const priceEl = card.querySelector(".card-price");
-            if (!priceEl) return;
-            
-            const price = latestPrices[cardId];
-            priceEl.textContent = price !== undefined && price !== null 
-              ? `$${price.toFixed(2)}` 
-              : "—";
-          });
+          updatePricesInUI(batchIds);
         }
       } catch (error) {
         console.error("Error fetching batch prices:", error);
@@ -638,6 +754,21 @@ document.head.appendChild(style);
         await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
+  }
+  
+  function updatePricesInUI(cardIds) {
+    cardIds.forEach(cardId => {
+      const card = document.querySelector(`.pokemon-set-list-card[data-id="${cardId}"]`);
+      if (!card) return;
+      
+      const priceEl = card.querySelector(".card-price");
+      if (!priceEl) return;
+      
+      const price = priceCache.get(cardId);
+      priceEl.textContent = price !== undefined && price !== null 
+        ? `$${price.toFixed(2)}` 
+        : "—";
+    });
   }
 
   async function initEmbeds() {
