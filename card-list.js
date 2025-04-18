@@ -141,9 +141,12 @@ document.head.appendChild(style);
   const style = document.createElement("style");
   style.textContent = `
     body.modal-open {
-      overflow: hidden;
-      position: fixed;
-      width: 100%;
+      overflow: hidden !important;
+      position: fixed !important;
+      width: 100% !important;
+      height: 100% !important;
+      top: 0 !important;
+      left: 0 !important;
     }
     .poke-embed {
       width: 100%;
@@ -219,17 +222,7 @@ document.head.appendChild(style);
       text-align: center;
     }
     @media (max-width: 768px) {
-      .poke-embed {
-  width: 100%;
-  max-width: 800px;
-  min-height: 360px;
-  box-sizing: border-box;
-}
-@media (min-width: 768px) {
-  .poke-embed {
-    width: 800px;
-  }
-}
+      /* Remove nested media query */
     }
     .poke-embed-modal {
       position: fixed;
@@ -242,6 +235,7 @@ document.head.appendChild(style);
       z-index: 9999; /* Higher z-index to ensure it's above Shopify menu */
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      text-align: center; /* Help with centering */
     }
     .poke-embed-modal.show {
       display: flex;
@@ -266,16 +260,16 @@ document.head.appendChild(style);
     @media (max-width: 768px) {
       .poke-embed-modal {
         align-items: flex-start; /* Top align on mobile */
-        padding: 20px 10px;
+        padding: 20px 0; /* Remove horizontal padding */
       }
       .poke-embed {
-        width: 90% !important; /* Force width to be 90% of viewport */
-        max-width: 90% !important; /* Force max-width to be 90% of viewport */
+        width: 80% !important; /* Further reduce width for more margin */
+        max-width: 80% !important; /* Further reduce max-width for more margin */
         margin: 0 auto 60px auto; /* Center horizontally and add bottom margin */
         box-sizing: border-box; /* Include padding in width calculation */
         padding: 10px; /* Reduce padding to save space */
-        left: 0; /* Ensure proper centering */
-        right: 0; /* Ensure proper centering */
+        float: none; /* Ensure proper centering */
+        display: block; /* Better for centering */
       }
       .poke-card-image {
         flex: 0 0 auto; /* Don't force width */
@@ -530,23 +524,18 @@ document.head.appendChild(style);
 
         
 
-        // Store current scroll position and prevent background scrolling
-        const scrollY = window.scrollY;
-        document.body.style.top = `-${scrollY}px`;
-        modal.classList.add("show");
+        // Prevent background scrolling without storing position
         document.body.classList.add("modal-open");
+        modal.classList.add("show");
         
         // Reset modal scroll position
         modal.scrollTop = 0;
         setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
 
-        // Handle modal closing
+        // Handle modal closing - simpler approach
         const closeModal = () => {
-          const scrollY = parseInt(document.body.style.top || '0') * -1; // Convert to positive number
           document.body.classList.remove("modal-open");
-          document.body.style.top = '';
           modal.classList.remove("show");
-          window.scrollTo(0, scrollY); // Scroll to the original position
         };
 
         document.getElementById("pokeModalClose").onclick = closeModal;
