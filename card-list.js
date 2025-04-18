@@ -133,7 +133,7 @@ body {
   display: flex;
 }
 .poke-modal-close {
-  position: fixed; /* Changed from absolute to fixed */
+  position: absolute; /* Changed from fixed to absolute for desktop */
   top: 10px;
   right: 10px;
   font-size: 24px;
@@ -222,8 +222,9 @@ canvas.poke-price-chart {
   }
 
   .poke-modal-close {
-    top: 12px;
-    right: 12px;
+    position: fixed; /* Keep as fixed for mobile */
+    top: 10px;
+    right: 10px;
   }
 }
 
@@ -604,7 +605,6 @@ document.head.appendChild(style);
       // Show loading state in modal immediately
       modal.innerHTML = `
         <div class="poke-embed">
-        <div class="poke-modal-close" id="pokeModalClose">✖</div>
           <div class="poke-card-image">
             <img src="https://images.pokemontcg.io/${set}/${imageNumber}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${imageNumber}_hires.png" />
           </div>
@@ -627,6 +627,7 @@ document.head.appendChild(style);
             </div>
             <div class="poke-price-note">Prices provided by TCGplayer</div>
           </div>
+          <div class="poke-modal-close" id="pokeModalClose">✖</div>
         </div>
       `;
       
