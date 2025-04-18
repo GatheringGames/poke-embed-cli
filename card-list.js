@@ -236,11 +236,11 @@ document.head.appendChild(style);
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.75);
       display: none;
-      align-items: flex-start;
+      align-items: center; /* Center vertically on desktop */
       justify-content: center;
       padding: 0;
-      z-index: 1000;
-      overflow-y: scroll;
+      z-index: 9999; /* Higher z-index to ensure it's above Shopify menu */
+      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
     .poke-embed-modal.show {
@@ -265,6 +265,7 @@ document.head.appendChild(style);
     /* Mobile-specific adjustments */
     @media (max-width: 768px) {
       .poke-embed-modal {
+        align-items: flex-start; /* Top align on mobile */
         padding: 20px 10px;
       }
       .poke-embed {
@@ -532,6 +533,9 @@ document.head.appendChild(style);
         document.body.style.top = `-${scrollY}px`;
         modal.classList.add("show");
         document.body.classList.add("modal-open");
+        
+        // Reset modal scroll position
+        modal.scrollTop = 0;
         setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
 
         // Handle modal closing
