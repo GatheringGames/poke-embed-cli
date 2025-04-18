@@ -598,12 +598,15 @@ document.head.appendChild(style);
     const openModal = async (card) => {
       const { id, name, set, number, image, rarity, text } = card.dataset;
       
+      // Strip leading zeros for image URL
+      const imageNumber = number.replace(/^0+/, '');
+      
       // Show loading state in modal immediately
       modal.innerHTML = `
         <div class="poke-embed">
         <div class="poke-modal-close" id="pokeModalClose">✖</div>
           <div class="poke-card-image">
-            <img src="https://images.pokemontcg.io/${set}/${number}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${number}_hires.png" />
+            <img src="https://images.pokemontcg.io/${set}/${imageNumber}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${imageNumber}_hires.png" />
           </div>
           <div class="poke-info">
             <h3>${name}</h3>
