@@ -437,421 +437,335 @@ canvas.poke-price-chart {
 }
 `;
 document.head.appendChild(style);
-(async () => {
-  const SUPABASE_URL = "https://goptnxkxuligthfvefes.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvcHRueGt4dWxpZ3RoZnZlZmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MTY3MjcsImV4cCI6MjA1ODk5MjcyN30.4qh8BWbnwsrfbPHg7PfPG2B-0aTKpgipOATLqHq9MN0";
-  const EXCHANGE_RATE_API = "https://api.exchangerate.host/latest?base=USD&symbols=EUR,GBP";
 
-  // Cache for price data to avoid duplicate fetches
-  const priceCache = new Map();
-  
-  // Cache for historical price data
-  const historicalPriceCache = new Map();
-  
-  // Cache for sorted cards to avoid resorting unnecessarily
-  const sortedCardsCache = new Map();
-  
-  // Filter state - initialize with all types and rarities as selected
-  const filterState = {
-    types: new Set(),
-    rarities: new Set(),
-    allTypes: new Set(),
-    allRarities: new Set()
-  };
+// Wrap everything in DOMContentLoaded to ensure the DOM is fully loaded
+document.addEventListener("DOMContentLoaded", function() {
+  (async () => {
+    const SUPABASE_URL = "https://goptnxkxuligthfvefes.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvcHRueGt4dWxpZ3RoZnZlZmVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MTY3MjcsImV4cCI6MjA1ODk5MjcyN30.4qh8BWbnwsrfbPHg7PfPG2B-0aTKpgipOATLqHq9MN0";
+    const EXCHANGE_RATE_API = "https://api.exchangerate.host/latest?base=USD&symbols=EUR,GBP";
 
-  // Map of energy types to their icons
-  const TYPE_ICONS = {
-    "Grass": "https://js.gatheringgames.co.uk/symbols/grass.svg",
-    "Fire": "https://js.gatheringgames.co.uk/symbols/fire.svg",
-    "Water": "https://js.gatheringgames.co.uk/symbols/water.svg",
-    "Lightning": "https://js.gatheringgames.co.uk/symbols/lightning.svg",
-    "Psychic": "https://js.gatheringgames.co.uk/symbols/psychic.svg",
-    "Fighting": "https://js.gatheringgames.co.uk/symbols/fighting.svg",
-    "Darkness": "https://js.gatheringgames.co.uk/symbols/darkness.svg",
-    "Metal": "https://js.gatheringgames.co.uk/symbols/metal.svg",
-    "Dragon": "https://js.gatheringgames.co.uk/symbols/dragon.svg",
-    "Colorless": "https://js.gatheringgames.co.uk/symbols/colorless.svg",
-    "Trainer": "", // No specific icon for Trainer
-    "Special Energy": "https://js.gatheringgames.co.uk/symbols/colorless.svg" // Using colorless for special energy
-  };
-
-  // Try to get exchange rates from localStorage first to reduce API calls
-  let exchangeRates;
-  const cachedRates = localStorage.getItem('pokeExchangeRates');
-  const ratesCacheTime = localStorage.getItem('pokeExchangeRatesTime');
-  const now = Date.now();
-  
-  // Use cached rates if they're less than 24 hours old
-  if (cachedRates && ratesCacheTime && (now - parseInt(ratesCacheTime)) < 86400000) {
-    exchangeRates = JSON.parse(cachedRates);
-    console.log("Using cached exchange rates");
-  } else {
-    // Fetch new rates and cache them
-    exchangeRates = await fetch(EXCHANGE_RATE_API)
-      .then(r => r.json())
-      .then(data => {
-        const rates = {
-          eur: data.rates.EUR,
-          gbp: data.rates.GBP
-        };
-        
-        // Cache the rates
-        localStorage.setItem('pokeExchangeRates', JSON.stringify(rates));
-        localStorage.setItem('pokeExchangeRatesTime', now.toString());
-        
-        return rates;
-      })
-      .catch(() => ({ eur: 0.92, gbp: 0.78 }));
-  }
-
-  // Ensure Chart.js is loaded
-  const loadChartJs = () => {
-    return new Promise((resolve) => {
-      // Check if Chart is already defined globally
-      if (window.Chart) {
-        resolve();
-        return;
-      }
-      
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-      script.onload = () => resolve();
-      document.head.appendChild(script);
-    });
-  };
-  
-  // Load Chart.js and then initialize
-  await loadChartJs();
-  
-  // Load cards in a more efficient order - do prices first since they're most visible
-  loadGridPrices();
-  initGridCardClicks();
-  initEmbeds();
-  
-  // Create and insert sort controls
-  createSortControls();
-  
-  // Create and insert filter controls - do this last
-  createFilterControls();
-
-  const ENERGY_ICON_URLS = {
-    G: "https://js.gatheringgames.co.uk/symbols/grass.svg",
-    R: "https://js.gatheringgames.co.uk/symbols/fire.svg",
-    W: "https://js.gatheringgames.co.uk/symbols/water.svg",
-    L: "https://js.gatheringgames.co.uk/symbols/lightning.svg",
-    P: "https://js.gatheringgames.co.uk/symbols/psychic.svg",
-    F: "https://js.gatheringgames.co.uk/symbols/fighting.svg",
-    D: "https://js.gatheringgames.co.uk/symbols/darkness.svg",
-    M: "https://js.gatheringgames.co.uk/symbols/metal.svg",
-    Y: "https://js.gatheringgames.co.uk/symbols/fairy.svg",
-    N: "https://js.gatheringgames.co.uk/symbols/dragon.svg",
-    C: "https://js.gatheringgames.co.uk/symbols/colorless.svg"
-  };
-
-  function renderEnergySymbols(costStr) {
-    const matches = costStr.match(/\{([A-Z])\}/g) || [];
-    return matches.map(match => {
-      const symbol = match.replace(/\{|\}/g, '');
-      const url = ENERGY_ICON_URLS[symbol];
-      return url
-        ? `<img src="${url}" alt="${symbol}" class="energy-icon">`
-        : match;
-    }).join('');
-  }
-
-
-   function renderAdditionalCardDetails(dataset) {
-    const { hp, types, abilityName, abilityText, attacks, supertype, subtype, text } = dataset;
-  
-    const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
-    const hpInfo = hp ? `<div class="poke-hp">${hp} HP</div>` : "";
+    // Cache for price data to avoid duplicate fetches
+    const priceCache = new Map();
     
-    // Add trainer card type info
-    let cardTypeInfo = "";
-    if (supertype === "Trainer") {
-      cardTypeInfo = `<div class="poke-trainer-type">Trainer Card${subtype ? ` - ${subtype}` : ""}</div>`;
-    } else if (supertype === "Energy") {
-      cardTypeInfo = `<div class="poke-trainer-type">Energy Card${subtype ? ` - ${subtype}` : ""}</div>`;
-    }
+    // Cache for historical price data
+    const historicalPriceCache = new Map();
     
-    // Only include the ability section if both abilityName and abilityText are present
-    const abilityInfo = (abilityName && abilityText) 
-      ? `<div class="poke-ability"><strong>Ability: ${abilityName}</strong><br>${abilityText}</div>`
-      : "";
-      
-    // Only show rules text if it's not empty and it's not for Pokémon cards
-    const rulesText = (text && text.trim() !== "" && supertype !== "Pokémon") 
-      ? `<div class="poke-text">${text}</div>` 
-      : "";
+    // Cache for sorted cards to avoid resorting unnecessarily
+    const sortedCardsCache = new Map();
     
-    // For Pokémon, only show flavor text
-    const flavorText = (text && text.trim() !== "" && supertype === "Pokémon") 
-      ? `<div class="poke-flavor-text">${text}</div>` 
-      : "";
-    
-    let attacksHtml = "";
-    try {
-      const decoded = new DOMParser().parseFromString(attacks, "text/html").documentElement.textContent;
-      const attackArray = JSON.parse(decoded);
-      attackArray.sort((a, b) => a.cost.length - b.cost.length); // Sort by energy cost length
-  
-      for (const atk of attackArray) {
-        attacksHtml += `
-          <div class="poke-attack">
-            <span class="poke-attack-line">
-              ${renderEnergySymbols(atk.cost.join(""))}
-              <strong>${atk.name}</strong>
-              &nbsp;&nbsp;&nbsp;
-              <span class="poke-attack-damage">${atk.damage}</span>
-            </span>
-            ${atk.text ? `<div class="poke-attack-text">${atk.text}</div>` : ""}
-          </div>
-        `;
-      }
-    } catch (err) {
-      console.error("Attack parse failed", err, attacks);
-    }
-  
-    return `
-      <div class="poke-stats">
-        ${hpInfo}
-        ${typeBadge}
-      </div>
-      ${cardTypeInfo}
-      ${abilityInfo}
-      ${flavorText}
-      ${rulesText}
-      <div class="poke-attacks-container">
-        ${attacksHtml}
-      </div>
-    `;
-
-  }
-
-  function getSymbol(currency) {
-    if (currency === "eur") return "€";
-    if (currency === "gbp") return "£";
-    return "$";
-  }
-
-  function aggregate(data, intervalDays) {
-    const result = [];
-    for (let i = 0; i < data.length; i += intervalDays) {
-      const slice = data.slice(i, i + intervalDays);
-      const avg = slice.reduce((sum, val) => sum + val, 0) / slice.length;
-      result.push(avg);
-    }
-    return result;
-  }
-
-  function aggregateDates(dates, intervalDays) {
-    const result = [];
-    for (let i = 0; i < dates.length; i += intervalDays) {
-      result.push(dates[i]);
-    }
-    return result;
-  }
-
-  async function setupEmbed(container, id, prices, dates, currentCurrency = "usd") {
-    const ctx = container.querySelector("canvas").getContext("2d");
-    const priceLabel = container.querySelector(".poke-current-price");
-
-    const getConvertedPrices = (currency) => {
-      if (currency === "eur") return prices.map(p => p * exchangeRates.eur);
-      if (currency === "gbp") return prices.map(p => p * exchangeRates.gbp);
-      return prices;
+    // Filter state - initialize with all types and rarities as selected
+    const filterState = {
+      types: new Set(),
+      rarities: new Set(),
+      allTypes: new Set(),
+      allRarities: new Set()
     };
 
-    let chart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: dates.slice(-7),
-        datasets: [{
-          label: "Price (USD)",
-          data: prices.slice(-7),
-          borderColor: "#d8232f",
-          backgroundColor: "rgba(216,35,47,0.2)",
-          fill: true,
-        }]
-      },
-      options: {
-        animation: false, // Disable animations for better performance
-        responsive: true,
-        maintainAspectRatio: true
-      }
-    });
+    // Map of energy types to their icons
+    const TYPE_ICONS = {
+      "Grass": "https://js.gatheringgames.co.uk/symbols/grass.svg",
+      "Fire": "https://js.gatheringgames.co.uk/symbols/fire.svg",
+      "Water": "https://js.gatheringgames.co.uk/symbols/water.svg",
+      "Lightning": "https://js.gatheringgames.co.uk/symbols/lightning.svg",
+      "Psychic": "https://js.gatheringgames.co.uk/symbols/psychic.svg",
+      "Fighting": "https://js.gatheringgames.co.uk/symbols/fighting.svg",
+      "Darkness": "https://js.gatheringgames.co.uk/symbols/darkness.svg",
+      "Metal": "https://js.gatheringgames.co.uk/symbols/metal.svg",
+      "Dragon": "https://js.gatheringgames.co.uk/symbols/dragon.svg",
+      "Colorless": "https://js.gatheringgames.co.uk/symbols/colorless.svg",
+      "Trainer": "", // No specific icon for Trainer
+      "Special Energy": "https://js.gatheringgames.co.uk/symbols/colorless.svg" // Using colorless for special energy
+    };
 
-    priceLabel.textContent = `${getSymbol(currentCurrency)}${getConvertedPrices(currentCurrency).slice(-1)[0].toFixed(2)}`;
-
-    container.querySelectorAll(".poke-range-buttons button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        container.querySelector(".poke-range-buttons .active").classList.remove("active");
-        btn.classList.add("active");
-        const range = parseInt(btn.dataset.range);
-        const converted = getConvertedPrices(currentCurrency);
-        let shownPrices, shownDates;
-
-        if (range === 180) {
-          shownPrices = aggregate(converted.slice(-180), 14);
-          shownDates = aggregateDates(dates.slice(-180), 14);
-        } else if (range === 365) {
-          shownPrices = aggregate(converted.slice(-365), 30);
-          shownDates = aggregateDates(dates.slice(-365), 30);
-        } else {
-          shownPrices = converted.slice(-range);
-          shownDates = dates.slice(-range);
-        }
-
-        chart.data.labels = shownDates;
-        chart.data.datasets[0].data = shownPrices;
-        chart.update();
-      });
-    });
-
-    container.querySelectorAll(".poke-currency-buttons button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        container.querySelector(".poke-currency-buttons .active").classList.remove("active");
-        btn.classList.add("active");
-        currentCurrency = btn.dataset.currency;
-        const converted = getConvertedPrices(currentCurrency);
-        const range = parseInt(container.querySelector(".poke-range-buttons .active").dataset.range);
-
-        let shownPrices, shownDates;
-        if (range === 180) {
-          shownPrices = aggregate(converted.slice(-180), 14);
-          shownDates = aggregateDates(dates.slice(-180), 14);
-        } else if (range === 365) {
-          shownPrices = aggregate(converted.slice(-365), 30);
-          shownDates = aggregateDates(dates.slice(-365), 30);
-        } else {
-          shownPrices = converted.slice(-range);
-          shownDates = dates.slice(-range);
-        }
-
-        chart.data.labels = shownDates;
-        chart.data.datasets[0].data = shownPrices;
-        chart.update();
-
-        priceLabel.textContent = `${getSymbol(currentCurrency)}${converted[converted.length - 1].toFixed(2)}`;
-      });
-    });
-
-    container.querySelector("img").addEventListener("click", e => {
-      window.open(e.target.dataset.hires, "_blank");
-    });
-  }
-
-  async function initGridCardClicks() {
-    const cards = document.querySelectorAll(".pokemon-set-list-card");
-    const modal = document.getElementById("pokeEmbedModal");
-
-    if (!modal) return;
+    // Try to get exchange rates from localStorage first to reduce API calls
+    let exchangeRates;
+    const cachedRates = localStorage.getItem('pokeExchangeRates');
+    const ratesCacheTime = localStorage.getItem('pokeExchangeRatesTime');
+    const now = Date.now();
     
-    // Pre-fetch historical price data for all visible cards
-    const visibleCards = Array.from(cards).filter(card => {
-      const rect = card.getBoundingClientRect();
-      return (
-        rect.top >= 0 &&
-        rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-      );
-    }).slice(0, 10); // Just get the first 10 visible cards
-    
-    // Pre-fetch data for visible cards
-    const prefetchPromises = visibleCards.map(async card => {
-      const id = card.dataset.id;
-      if (historicalPriceCache.has(id)) return;
-      
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-          },
-        });
+    // Use cached rates if they're less than 24 hours old
+    if (cachedRates && ratesCacheTime && (now - parseInt(ratesCacheTime)) < 86400000) {
+      exchangeRates = JSON.parse(cachedRates);
+      console.log("Using cached exchange rates");
+    } else {
+      // Fetch new rates and cache them
+      exchangeRates = await fetch(EXCHANGE_RATE_API)
+        .then(r => r.json())
+        .then(data => {
+          const rates = {
+            eur: data.rates.EUR,
+            gbp: data.rates.GBP
+          };
+          
+          // Cache the rates
+          localStorage.setItem('pokeExchangeRates', JSON.stringify(rates));
+          localStorage.setItem('pokeExchangeRatesTime', now.toString());
+          
+          return rates;
+        })
+        .catch(() => ({ eur: 0.92, gbp: 0.78 }));
+    }
+
+    // Ensure Chart.js is loaded
+    const loadChartJs = () => {
+      return new Promise((resolve) => {
+        // Check if Chart is already defined globally
+        if (window.Chart) {
+          resolve();
+          return;
+        }
         
-        if (res.ok) {
-          const priceData = await res.json();
-          historicalPriceCache.set(id, {
-            prices: priceData.map(d => d.price_usd),
-            dates: priceData.map(d => d.date)
-          });
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => resolve();
+        document.head.appendChild(script);
+      });
+    };
+    
+    // Load Chart.js and then initialize
+    await loadChartJs();
+    
+    // Load cards in a more efficient order - do prices first since they're most visible
+    loadGridPrices();
+    initGridCardClicks();
+    initEmbeds();
+    
+    // Create and insert sort controls
+    createSortControls();
+    
+    // Create and insert filter controls - do this last
+    createFilterControls();
+
+    const ENERGY_ICON_URLS = {
+      G: "https://js.gatheringgames.co.uk/symbols/grass.svg",
+      R: "https://js.gatheringgames.co.uk/symbols/fire.svg",
+      W: "https://js.gatheringgames.co.uk/symbols/water.svg",
+      L: "https://js.gatheringgames.co.uk/symbols/lightning.svg",
+      P: "https://js.gatheringgames.co.uk/symbols/psychic.svg",
+      F: "https://js.gatheringgames.co.uk/symbols/fighting.svg",
+      D: "https://js.gatheringgames.co.uk/symbols/darkness.svg",
+      M: "https://js.gatheringgames.co.uk/symbols/metal.svg",
+      Y: "https://js.gatheringgames.co.uk/symbols/fairy.svg",
+      N: "https://js.gatheringgames.co.uk/symbols/dragon.svg",
+      C: "https://js.gatheringgames.co.uk/symbols/colorless.svg"
+    };
+
+    function renderEnergySymbols(costStr) {
+      const matches = costStr.match(/\{([A-Z])\}/g) || [];
+      return matches.map(match => {
+        const symbol = match.replace(/\{|\}/g, '');
+        const url = ENERGY_ICON_URLS[symbol];
+        return url
+          ? `<img src="${url}" alt="${symbol}" class="energy-icon">`
+          : match;
+      }).join('');
+    }
+
+
+     function renderAdditionalCardDetails(dataset) {
+      const { hp, types, abilityName, abilityText, attacks, supertype, subtype, text } = dataset;
+    
+      const typeBadge = types ? `<div class="poke-type">Type: ${types}</div>` : "";
+      const hpInfo = hp ? `<div class="poke-hp">${hp} HP</div>` : "";
+      
+      // Add trainer card type info
+      let cardTypeInfo = "";
+      if (supertype === "Trainer") {
+        cardTypeInfo = `<div class="poke-trainer-type">Trainer Card${subtype ? ` - ${subtype}` : ""}</div>`;
+      } else if (supertype === "Energy") {
+        cardTypeInfo = `<div class="poke-trainer-type">Energy Card${subtype ? ` - ${subtype}` : ""}</div>`;
+      }
+      
+      // Only include the ability section if both abilityName and abilityText are present
+      const abilityInfo = (abilityName && abilityText) 
+        ? `<div class="poke-ability"><strong>Ability: ${abilityName}</strong><br>${abilityText}</div>`
+        : "";
+        
+      // Only show rules text if it's not empty and it's not for Pokémon cards
+      const rulesText = (text && text.trim() !== "" && supertype !== "Pokémon") 
+        ? `<div class="poke-text">${text}</div>` 
+        : "";
+      
+      // For Pokémon, only show flavor text
+      const flavorText = (text && text.trim() !== "" && supertype === "Pokémon") 
+        ? `<div class="poke-flavor-text">${text}</div>` 
+        : "";
+      
+      let attacksHtml = "";
+      try {
+        const decoded = new DOMParser().parseFromString(attacks, "text/html").documentElement.textContent;
+        const attackArray = JSON.parse(decoded);
+        attackArray.sort((a, b) => a.cost.length - b.cost.length); // Sort by energy cost length
+    
+        for (const atk of attackArray) {
+          attacksHtml += `
+            <div class="poke-attack">
+              <span class="poke-attack-line">
+                ${renderEnergySymbols(atk.cost.join(""))}
+                <strong>${atk.name}</strong>
+                &nbsp;&nbsp;&nbsp;
+                <span class="poke-attack-damage">${atk.damage}</span>
+              </span>
+              ${atk.text ? `<div class="poke-attack-text">${atk.text}</div>` : ""}
+            </div>
+          `;
         }
       } catch (err) {
-        console.error("Error prefetching prices for card:", id);
+        console.error("Attack parse failed", err, attacks);
       }
-    });
     
-    // Wait for prefetch to complete
-    await Promise.all(prefetchPromises);
-
-    // Function to open the modal
-    const openModal = async (card) => {
-      const { id, name, set, number, image, rarity, text } = card.dataset;
-      
-      // Strip leading zeros for image URL
-      const imageNumber = number.replace(/^0+/, '');
-      
-      // Get rarity icon
-      const rarityIcon = getRarityIcon(rarity);
-      
-      // Show loading state in modal immediately
-      modal.innerHTML = `
-        <div class="poke-embed">
-          <div class="poke-card-image">
-            <img src="https://images.pokemontcg.io/${set}/${imageNumber}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${imageNumber}_hires.png" />
-          </div>
-          <div class="poke-info">
-            <h3>${name}</h3>
-            <div class="poke-rarity">
-              <span style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
-                ${rarityIcon}<span>${rarity}</span>
-              </span>
-            </div>\n${renderAdditionalCardDetails(card.dataset)}
-            
-            <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
-            <div class="poke-currency-buttons">
-              <button class="active" data-currency="usd">USD</button>
-              <button data-currency="eur">EUR</button>
-              <button data-currency="gbp">GBP</button>
-            </div>
-            <canvas class="poke-price-chart"></canvas>
-            <div class="poke-range-buttons">
-              <button class="active" data-range="7">7d</button>
-              <button data-range="30">30d</button>
-              <button data-range="180">6mo</button>
-              <button data-range="365">1yr</button>
-            </div>
-            <div class="poke-price-note">Prices provided by TCGplayer</div>
-          </div>
-          <div class="poke-modal-close" id="pokeModalClose">✖</div>
+      return `
+        <div class="poke-stats">
+          ${hpInfo}
+          ${typeBadge}
+        </div>
+        ${cardTypeInfo}
+        ${abilityInfo}
+        ${flavorText}
+        ${rulesText}
+        <div class="poke-attacks-container">
+          ${attacksHtml}
         </div>
       `;
-      
-      // Show modal
-      modal.classList.add("show");
-      document.body.classList.add("modal-open");
-      
-      // Reset modal scroll position
-      modal.scrollTop = 0;
-      
-      // Set up close handler
-      document.getElementById("pokeModalClose").onclick = closeModal;
-      modal.onclick = (e) => {
-        if (e.target === modal) closeModal();
+
+    }
+
+    function getSymbol(currency) {
+      if (currency === "eur") return "€";
+      if (currency === "gbp") return "£";
+      return "$";
+    }
+
+    function aggregate(data, intervalDays) {
+      const result = [];
+      for (let i = 0; i < data.length; i += intervalDays) {
+        const slice = data.slice(i, i + intervalDays);
+        const avg = slice.reduce((sum, val) => sum + val, 0) / slice.length;
+        result.push(avg);
+      }
+      return result;
+    }
+
+    function aggregateDates(dates, intervalDays) {
+      const result = [];
+      for (let i = 0; i < dates.length; i += intervalDays) {
+        result.push(dates[i]);
+      }
+      return result;
+    }
+
+    async function setupEmbed(container, id, prices, dates, currentCurrency = "usd") {
+      const ctx = container.querySelector("canvas").getContext("2d");
+      const priceLabel = container.querySelector(".poke-current-price");
+
+      const getConvertedPrices = (currency) => {
+        if (currency === "eur") return prices.map(p => p * exchangeRates.eur);
+        if (currency === "gbp") return prices.map(p => p * exchangeRates.gbp);
+        return prices;
       };
+
+      let chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: dates.slice(-7),
+          datasets: [{
+            label: "Price (USD)",
+            data: prices.slice(-7),
+            borderColor: "#d8232f",
+            backgroundColor: "rgba(216,35,47,0.2)",
+            fill: true,
+          }]
+        },
+        options: {
+          animation: false, // Disable animations for better performance
+          responsive: true,
+          maintainAspectRatio: true
+        }
+      });
+
+      priceLabel.textContent = `${getSymbol(currentCurrency)}${getConvertedPrices(currentCurrency).slice(-1)[0].toFixed(2)}`;
+
+      container.querySelectorAll(".poke-range-buttons button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          container.querySelector(".poke-range-buttons .active").classList.remove("active");
+          btn.classList.add("active");
+          const range = parseInt(btn.dataset.range);
+          const converted = getConvertedPrices(currentCurrency);
+          let shownPrices, shownDates;
+
+          if (range === 180) {
+            shownPrices = aggregate(converted.slice(-180), 14);
+            shownDates = aggregateDates(dates.slice(-180), 14);
+          } else if (range === 365) {
+            shownPrices = aggregate(converted.slice(-365), 30);
+            shownDates = aggregateDates(dates.slice(-365), 30);
+          } else {
+            shownPrices = converted.slice(-range);
+            shownDates = dates.slice(-range);
+          }
+
+          chart.data.labels = shownDates;
+          chart.data.datasets[0].data = shownPrices;
+          chart.update();
+        });
+      });
+
+      container.querySelectorAll(".poke-currency-buttons button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          container.querySelector(".poke-currency-buttons .active").classList.remove("active");
+          btn.classList.add("active");
+          currentCurrency = btn.dataset.currency;
+          const converted = getConvertedPrices(currentCurrency);
+          const range = parseInt(container.querySelector(".poke-range-buttons .active").dataset.range);
+
+          let shownPrices, shownDates;
+          if (range === 180) {
+            shownPrices = aggregate(converted.slice(-180), 14);
+            shownDates = aggregateDates(dates.slice(-180), 14);
+          } else if (range === 365) {
+            shownPrices = aggregate(converted.slice(-365), 30);
+            shownDates = aggregateDates(dates.slice(-365), 30);
+          } else {
+            shownPrices = converted.slice(-range);
+            shownDates = dates.slice(-range);
+          }
+
+          chart.data.labels = shownDates;
+          chart.data.datasets[0].data = shownPrices;
+          chart.update();
+
+          priceLabel.textContent = `${getSymbol(currentCurrency)}${converted[converted.length - 1].toFixed(2)}`;
+        });
+      });
+
+      container.querySelector("img").addEventListener("click", e => {
+        window.open(e.target.dataset.hires, "_blank");
+      });
+    }
+
+    async function initGridCardClicks() {
+      const cards = document.querySelectorAll(".pokemon-set-list-card");
+      const modal = document.getElementById("pokeEmbedModal");
+
+      if (!modal) return;
       
-      // Check if we already have the price data in the cache
-      let prices, dates;
+      // Pre-fetch historical price data for all visible cards
+      const visibleCards = Array.from(cards).filter(card => {
+        const rect = card.getBoundingClientRect();
+        return (
+          rect.top >= 0 &&
+          rect.left >= 0 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+      }).slice(0, 10); // Just get the first 10 visible cards
       
-      if (historicalPriceCache.has(id)) {
-        const cachedData = historicalPriceCache.get(id);
-        prices = cachedData.prices;
-        dates = cachedData.dates;
-        console.log("Using cached historical price data for card:", id);
-      } else {
-        // Fetch the price data if not in cache
+      // Pre-fetch data for visible cards
+      const prefetchPromises = visibleCards.map(async card => {
+        const id = card.dataset.id;
+        if (historicalPriceCache.has(id)) return;
+        
         try {
           const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
             headers: {
@@ -862,524 +776,829 @@ document.head.appendChild(style);
           
           if (res.ok) {
             const priceData = await res.json();
-            prices = priceData.map(d => d.price_usd);
-            dates = priceData.map(d => d.date);
+            historicalPriceCache.set(id, {
+              prices: priceData.map(d => d.price_usd),
+              dates: priceData.map(d => d.date)
+            });
+          }
+        } catch (err) {
+          console.error("Error prefetching prices for card:", id);
+        }
+      });
+      
+      // Wait for prefetch to complete
+      await Promise.all(prefetchPromises);
+
+      // Function to open the modal
+      const openModal = async (card) => {
+        const { id, name, set, number, image, rarity, text } = card.dataset;
+        
+        // Strip leading zeros for image URL
+        const imageNumber = number.replace(/^0+/, '');
+        
+        // Get rarity icon
+        const rarityIcon = getRarityIcon(rarity);
+        
+        // Show loading state in modal immediately
+        modal.innerHTML = `
+          <div class="poke-embed">
+            <div class="poke-card-image">
+              <img src="https://images.pokemontcg.io/${set}/${imageNumber}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${imageNumber}_hires.png" />
+            </div>
+            <div class="poke-info">
+              <h3>${name}</h3>
+              <div class="poke-rarity">
+                <span style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
+                  ${rarityIcon}<span>${rarity}</span>
+                </span>
+              </div>\n${renderAdditionalCardDetails(card.dataset)}
+              
+              <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
+              <div class="poke-currency-buttons">
+                <button class="active" data-currency="usd">USD</button>
+                <button data-currency="eur">EUR</button>
+                <button data-currency="gbp">GBP</button>
+              </div>
+              <canvas class="poke-price-chart"></canvas>
+              <div class="poke-range-buttons">
+                <button class="active" data-range="7">7d</button>
+                <button data-range="30">30d</button>
+                <button data-range="180">6mo</button>
+                <button data-range="365">1yr</button>
+              </div>
+              <div class="poke-price-note">Prices provided by TCGplayer</div>
+            </div>
+            <div class="poke-modal-close" id="pokeModalClose">✖</div>
+          </div>
+        `;
+        
+        // Show modal
+        modal.classList.add("show");
+        document.body.classList.add("modal-open");
+        
+        // Reset modal scroll position
+        modal.scrollTop = 0;
+        
+        // Set up close handler
+        document.getElementById("pokeModalClose").onclick = closeModal;
+        modal.onclick = (e) => {
+          if (e.target === modal) closeModal();
+        };
+        
+        // Check if we already have the price data in the cache
+        let prices, dates;
+        
+        if (historicalPriceCache.has(id)) {
+          const cachedData = historicalPriceCache.get(id);
+          prices = cachedData.prices;
+          dates = cachedData.dates;
+          console.log("Using cached historical price data for card:", id);
+        } else {
+          // Fetch the price data if not in cache
+          try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
+              headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${SUPABASE_KEY}`,
+              },
+            });
             
-            // Cache the results for future use
-            historicalPriceCache.set(id, { prices, dates });
-          } else {
-            console.error("Failed to fetch price data for card:", id);
+            if (res.ok) {
+              const priceData = await res.json();
+              prices = priceData.map(d => d.price_usd);
+              dates = priceData.map(d => d.date);
+              
+              // Cache the results for future use
+              historicalPriceCache.set(id, { prices, dates });
+            } else {
+              console.error("Failed to fetch price data for card:", id);
+              prices = [0];
+              dates = [new Date().toISOString().split('T')[0]];
+            }
+          } catch (error) {
+            console.error("Error fetching prices for card:", id);
             prices = [0];
             dates = [new Date().toISOString().split('T')[0]];
           }
-        } catch (error) {
-          console.error("Error fetching prices for card:", id);
-          prices = [0];
-          dates = [new Date().toISOString().split('T')[0]];
         }
-      }
-      
-      setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
-    };
-    
-    // Function to close the modal
-    const closeModal = () => {
-      document.body.classList.remove("modal-open");
-      modal.classList.remove("show");
-    };
-    
-    // Add click handlers to all cards
-    cards.forEach(card => {
-      card.addEventListener("click", () => openModal(card));
-    });
-  }
-
-  async function loadGridPrices() {
-    const cards = document.querySelectorAll(".pokemon-set-list-card");
-    const headers = {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-    };
-
-    // Get all card IDs
-    const cardIds = Array.from(cards).map(card => card.dataset.id);
-    
-    // If no cards, exit early
-    if (cardIds.length === 0) return;
-    
-    // Only fetch prices for cards that are visible in viewport first
-    const visibleCards = Array.from(cards).filter(card => {
-      const rect = card.getBoundingClientRect();
-      return (
-        rect.top >= -200 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) + 200
-      );
-    });
-    
-    const visibleCardIds = visibleCards.map(card => card.dataset.id);
-    const remainingCardIds = cardIds.filter(id => !visibleCardIds.includes(id));
-    
-    // Process visible cards first, then handle remaining cards
-    await fetchPricesForIds(visibleCardIds, headers);
-    
-    // Then load the rest asynchronously
-    fetchPricesForIds(remainingCardIds, headers);
-  }
-  
-  async function fetchPricesForIds(cardIds, headers) {
-    // Batch size for API requests
-    const BATCH_SIZE = 20;
-    
-    // Process cards in batches
-    for (let i = 0; i < cardIds.length; i += BATCH_SIZE) {
-      const batchIds = cardIds.slice(i, i + BATCH_SIZE);
-      
-      // Skip IDs we already have in cache
-      const uncachedIds = batchIds.filter(id => !priceCache.has(id));
-      
-      // If all IDs are cached in this batch, just update the UI
-      if (uncachedIds.length === 0) {
-        updatePricesInUI(batchIds);
-        continue;
-      }
-      
-      // Create a query string with all uncached IDs in this batch
-      const idFilter = uncachedIds.map(id => `card_id.eq.${id}`).join(',');
-      
-      try {
-        // Make a single request for the entire batch using OR filter
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=card_id,price_usd&or=(${idFilter})&order=date.desc&limit=${uncachedIds.length}`, {
-          headers,
-        });
         
-        if (res.ok) {
-          const priceData = await res.json();
-          
-          // Store data in cache and update the UI
-          priceData.forEach(item => {
-            if (!priceCache.has(item.card_id)) {
-              priceCache.set(item.card_id, item.price_usd);
-            }
-          });
-          
-          updatePricesInUI(batchIds);
-        }
-      } catch (error) {
-        console.error("Error fetching batch prices:", error);
-      }
+        setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
+      };
       
-      // Add a small delay between batches to avoid overwhelming the API
-      if (i + BATCH_SIZE < cardIds.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
+      // Function to close the modal
+      const closeModal = () => {
+        document.body.classList.remove("modal-open");
+        modal.classList.remove("show");
+      };
+      
+      // Add click handlers to all cards
+      cards.forEach(card => {
+        card.addEventListener("click", () => openModal(card));
+      });
     }
-  }
-  
-  function updatePricesInUI(cardIds) {
-    cardIds.forEach(cardId => {
-      const card = document.querySelector(`.pokemon-set-list-card[data-id="${cardId}"]`);
-      if (!card) return;
-      
-      const priceEl = card.querySelector(".card-price");
-      if (!priceEl) return;
-      
-      const price = priceCache.get(cardId);
-      priceEl.textContent = price !== undefined && price !== null 
-        ? `$${price.toFixed(2)}` 
-        : "—";
-    });
-  }
 
-  async function initEmbeds() {
-    // existing embed::[[...]] handling left unchanged for backward compatibility
-  }
+    async function loadGridPrices() {
+      const cards = document.querySelectorAll(".pokemon-set-list-card");
+      const headers = {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+      };
 
-  // New function to create sort controls
-  function createSortControls() {
-    const gridContainer = document.querySelector('.pokemon-set-list-grid');
-    if (!gridContainer) return;
-    
-    // Create sort controls container
-    const sortControls = document.createElement('div');
-    sortControls.className = 'pokemon-set-sort-controls';
-    sortControls.innerHTML = `
-      <label for="sortOption">Sort by</label>
-      <select id="sortOption">
-        <option value="number_asc">Card number (asc)</option>
-        <option value="number_desc">Card number (desc)</option>
-        <option value="name_asc">Card name (A-Z)</option>
-        <option value="name_desc">Card name (Z-A)</option>
-        <option value="rarity_desc">Rarity (desc)</option>
-        <option value="rarity_asc">Rarity (asc)</option>
-        <option value="price_desc">Market price (desc)</option>
-        <option value="price_asc">Market price (asc)</option>
-      </select>
-    `;
-    
-    // Insert controls before the grid
-    gridContainer.parentNode.insertBefore(sortControls, gridContainer);
-    
-    // Add event listener to the sort select
-    document.getElementById('sortOption').addEventListener('change', (e) => {
-      const [criterion, direction] = e.target.value.split('_');
-      sortCards(criterion, direction);
-    });
-  }
-  
-  // Function to sort cards based on criterion and direction
-  function sortCards(criterion, direction) {
-    const gridContainer = document.querySelector('.pokemon-set-list-grid');
-    if (!gridContainer) return;
-    
-    // Create a cache key based on the criterion and direction
-    const cacheKey = `${criterion}_${direction}`;
-    
-    // Check if we already have sorted these cards with this criterion and direction
-    if (sortedCardsCache.has(cacheKey)) {
-      // Get the cached sorted cards
-      const sortedCards = sortedCardsCache.get(cacheKey);
+      // Get all card IDs
+      const cardIds = Array.from(cards).map(card => card.dataset.id);
       
-      // Reappend cards in the cached order
-      sortedCards.forEach(card => gridContainer.appendChild(card));
+      // If no cards, exit early
+      if (cardIds.length === 0) return;
       
-      return;
-    }
-    
-    const cards = Array.from(gridContainer.querySelectorAll('.pokemon-set-list-card'));
-    
-    // Wait for prices to be loaded before sorting by price
-    if (criterion === 'price' && cards.some(card => card.querySelector('.card-price').textContent === 'Loading...')) {
-      alert('Please wait for prices to finish loading before sorting by price.');
-      
-      // Reset the select to previous value
-      const sortSelect = document.getElementById('sortOption');
-      if (sortSelect) {
-        // Default to card number if can't sort by price yet
-        sortSelect.value = 'number_asc';
-      }
-      
-      return;
-    }
-    
-    cards.sort((a, b) => {
-      let valueA, valueB;
-      
-      switch (criterion) {
-        case 'number':
-          // Sort by the numerical part of the card number
-          valueA = parseInt(a.dataset.number.replace(/\D/g, '')) || 0;
-          valueB = parseInt(b.dataset.number.replace(/\D/g, '')) || 0;
-          break;
-          
-        case 'name':
-          valueA = a.dataset.name.toLowerCase();
-          valueB = b.dataset.name.toLowerCase();
-          break;
-          
-        case 'rarity':
-          // Sort by rarity with a custom order
-          const rarityOrder = {
-            'common': 1, 
-            'uncommon': 2, 
-            'rare': 3, 
-            'double rare': 4, 
-            'ultra rare': 5, 
-            'illustration rare': 6, 
-            'special illustration rare': 7, 
-            'hyper rare': 8
-          };
-          
-          valueA = rarityOrder[a.dataset.rarity.toLowerCase()] || 0;
-          valueB = rarityOrder[b.dataset.rarity.toLowerCase()] || 0;
-          break;
-          
-        case 'price':
-          // Extract numeric price values
-          valueA = parseFloat(a.querySelector('.card-price').textContent.replace(/[^0-9.-]+/g, '')) || 0;
-          valueB = parseFloat(b.querySelector('.card-price').textContent.replace(/[^0-9.-]+/g, '')) || 0;
-          break;
-          
-        default:
-          valueA = 0;
-          valueB = 0;
-      }
-      
-      // Apply sort direction
-      let comparison = 0;
-      if (criterion === 'name') {
-        // String comparison
-        comparison = valueA.localeCompare(valueB);
-      } else {
-        // Numeric comparison
-        comparison = valueA - valueB;
-      }
-      
-      return direction === 'asc' ? comparison : -comparison;
-    });
-    
-    // Reappend cards in sorted order
-    cards.forEach(card => gridContainer.appendChild(card));
-    
-    // Cache the sorted cards for future use
-    sortedCardsCache.set(cacheKey, [...cards]);
-  }
-
-  // Function to get rarity icon
-  function getRarityIcon(rarity) {
-    if (!rarity) return '';
-    
-    // Normalize the rarity to lowercase and handle special cases
-    const normalizedRarity = rarity.toLowerCase().trim();
-    
-    // Map to icon URL - use the same base URL as the energy icons for consistency
-    const iconPath = `https://js.gatheringgames.co.uk/symbols/${normalizedRarity}.svg`;
-    
-    // Add style attributes directly to ensure proper display
-    return `<img src="${iconPath}" alt="${rarity}" class="rarity-icon" style="height:16px; max-width:none; border-radius:0; overflow:visible;">`;
-  }
-
-  // Define the rarity order for sorting
-  const RARITY_ORDER = {
-    'Common': 1,
-    'Uncommon': 2,
-    'Rare': 3,
-    'Double Rare': 4,
-    'Illustration Rare': 5,
-    'Ultra Rare': 6,
-    'Special Illustration Rare': 7,
-    'Hyper Rare': 8
-  };
-
-  // Function to create filter controls
-  function createFilterControls() {
-    const gridContainer = document.querySelector('.pokemon-set-list-grid');
-    if (!gridContainer) return;
-    
-    // Collect all types and rarities that exist in the data
-    const allTypes = new Set();
-    const allRarities = new Set();
-    
-    // Process all cards to get unique types and rarities
-    document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
-      // Get rarity
-      const rarity = card.dataset.rarity;
-      if (rarity) allRarities.add(rarity);
-      
-      // Get types for Pokemon cards
-      const types = card.dataset.types ? card.dataset.types.split(', ') : [];
-      types.forEach(type => {
-        if (type) allTypes.add(type);
+      // Only fetch prices for cards that are visible in viewport first
+      const visibleCards = Array.from(cards).filter(card => {
+        const rect = card.getBoundingClientRect();
+        return (
+          rect.top >= -200 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) + 200
+        );
       });
       
-      // Add supertype for non-Pokemon cards
-      const supertype = card.dataset.supertype;
-      if (supertype === 'Trainer') {
-        allTypes.add('Trainer');
-      } else if (supertype === 'Energy') {
-        if (card.dataset.subtype === 'Special') {
-          allTypes.add('Special Energy');
+      const visibleCardIds = visibleCards.map(card => card.dataset.id);
+      const remainingCardIds = cardIds.filter(id => !visibleCardIds.includes(id));
+      
+      // Process visible cards first, then handle remaining cards
+      await fetchPricesForIds(visibleCardIds, headers);
+      
+      // Then load the rest asynchronously
+      fetchPricesForIds(remainingCardIds, headers);
+    }
+    
+    async function fetchPricesForIds(cardIds, headers) {
+      // Batch size for API requests
+      const BATCH_SIZE = 20;
+      
+      // Process cards in batches
+      for (let i = 0; i < cardIds.length; i += BATCH_SIZE) {
+        const batchIds = cardIds.slice(i, i + BATCH_SIZE);
+        
+        // Skip IDs we already have in cache
+        const uncachedIds = batchIds.filter(id => !priceCache.has(id));
+        
+        // If all IDs are cached in this batch, just update the UI
+        if (uncachedIds.length === 0) {
+          updatePricesInUI(batchIds);
+          continue;
+        }
+        
+        // Create a query string with all uncached IDs in this batch
+        const idFilter = uncachedIds.map(id => `card_id.eq.${id}`).join(',');
+        
+        try {
+          // Make a single request for the entire batch using OR filter
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=card_id,price_usd&or=(${idFilter})&order=date.desc&limit=${uncachedIds.length}`, {
+            headers,
+          });
+          
+          if (res.ok) {
+            const priceData = await res.json();
+            
+            // Store data in cache and update the UI
+            priceData.forEach(item => {
+              if (!priceCache.has(item.card_id)) {
+                priceCache.set(item.card_id, item.price_usd);
+              }
+            });
+            
+            updatePricesInUI(batchIds);
+          }
+        } catch (error) {
+          console.error("Error fetching batch prices:", error);
+        }
+        
+        // Add a small delay between batches to avoid overwhelming the API
+        if (i + BATCH_SIZE < cardIds.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+    }
+    
+    function updatePricesInUI(cardIds) {
+      cardIds.forEach(cardId => {
+        const card = document.querySelector(`.pokemon-set-list-card[data-id="${cardId}"]`);
+        if (!card) return;
+        
+        const priceEl = card.querySelector(".card-price");
+        if (!priceEl) return;
+        
+        const price = priceCache.get(cardId);
+        priceEl.textContent = price !== undefined && price !== null 
+          ? `$${price.toFixed(2)}` 
+          : "—";
+      });
+    }
+
+    async function initEmbeds() {
+      // existing embed::[[...]] handling left unchanged for backward compatibility
+    }
+
+    // New function to create sort controls
+    function createSortControls() {
+      const gridContainer = document.querySelector('.pokemon-set-list-grid');
+      if (!gridContainer) return;
+      
+      // Create sort controls container
+      const sortControls = document.createElement('div');
+      sortControls.className = 'pokemon-set-sort-controls';
+      sortControls.innerHTML = `
+        <label for="sortOption">Sort by</label>
+        <select id="sortOption">
+          <option value="number_asc">Card number (asc)</option>
+          <option value="number_desc">Card number (desc)</option>
+          <option value="name_asc">Card name (A-Z)</option>
+          <option value="name_desc">Card name (Z-A)</option>
+          <option value="rarity_desc">Rarity (desc)</option>
+          <option value="rarity_asc">Rarity (asc)</option>
+          <option value="price_desc">Market price (desc)</option>
+          <option value="price_asc">Market price (asc)</option>
+        </select>
+      `;
+      
+      // Insert controls before the grid
+      gridContainer.parentNode.insertBefore(sortControls, gridContainer);
+      
+      // Add event listener to the sort select
+      document.getElementById('sortOption').addEventListener('change', (e) => {
+        const [criterion, direction] = e.target.value.split('_');
+        sortCards(criterion, direction);
+      });
+    }
+    
+    // Function to sort cards based on criterion and direction
+    function sortCards(criterion, direction) {
+      const gridContainer = document.querySelector('.pokemon-set-list-grid');
+      if (!gridContainer) return;
+      
+      // Create a cache key based on the criterion and direction
+      const cacheKey = `${criterion}_${direction}`;
+      
+      // Check if we already have sorted these cards with this criterion and direction
+      if (sortedCardsCache.has(cacheKey)) {
+        // Get the cached sorted cards
+        const sortedCards = sortedCardsCache.get(cacheKey);
+        
+        // Reappend cards in the cached order
+        sortedCards.forEach(card => gridContainer.appendChild(card));
+        
+        return;
+      }
+      
+      const cards = Array.from(gridContainer.querySelectorAll('.pokemon-set-list-card'));
+      
+      // Wait for prices to be loaded before sorting by price
+      if (criterion === 'price' && cards.some(card => card.querySelector('.card-price').textContent === 'Loading...')) {
+        alert('Please wait for prices to finish loading before sorting by price.');
+        
+        // Reset the select to previous value
+        const sortSelect = document.getElementById('sortOption');
+        if (sortSelect) {
+          // Default to card number if can't sort by price yet
+          sortSelect.value = 'number_asc';
+        }
+        
+        return;
+      }
+      
+      cards.sort((a, b) => {
+        let valueA, valueB;
+        
+        switch (criterion) {
+          case 'number':
+            // Sort by the numerical part of the card number
+            valueA = parseInt(a.dataset.number.replace(/\D/g, '')) || 0;
+            valueB = parseInt(b.dataset.number.replace(/\D/g, '')) || 0;
+            break;
+            
+          case 'name':
+            valueA = a.dataset.name.toLowerCase();
+            valueB = b.dataset.name.toLowerCase();
+            break;
+            
+          case 'rarity':
+            // Sort by rarity with a custom order
+            const rarityOrder = {
+              'common': 1, 
+              'uncommon': 2, 
+              'rare': 3, 
+              'double rare': 4, 
+              'ultra rare': 5, 
+              'illustration rare': 6, 
+              'special illustration rare': 7, 
+              'hyper rare': 8
+            };
+            
+            valueA = rarityOrder[a.dataset.rarity.toLowerCase()] || 0;
+            valueB = rarityOrder[b.dataset.rarity.toLowerCase()] || 0;
+            break;
+            
+          case 'price':
+            // Extract numeric price values
+            valueA = parseFloat(a.querySelector('.card-price').textContent.replace(/[^0-9.-]+/g, '')) || 0;
+            valueB = parseFloat(b.querySelector('.card-price').textContent.replace(/[^0-9.-]+/g, '')) || 0;
+            break;
+            
+          default:
+            valueA = 0;
+            valueB = 0;
+        }
+        
+        // Apply sort direction
+        let comparison = 0;
+        if (criterion === 'name') {
+          // String comparison
+          comparison = valueA.localeCompare(valueB);
         } else {
-          // Regular energy uses its type
+          // Numeric comparison
+          comparison = valueA - valueB;
+        }
+        
+        return direction === 'asc' ? comparison : -comparison;
+      });
+      
+      // Reappend cards in sorted order
+      cards.forEach(card => gridContainer.appendChild(card));
+      
+      // Cache the sorted cards for future use
+      sortedCardsCache.set(cacheKey, [...cards]);
+    }
+
+    // Function to get rarity icon
+    function getRarityIcon(rarity) {
+      if (!rarity) return '';
+      
+      // Normalize the rarity to lowercase and handle special cases
+      const normalizedRarity = rarity.toLowerCase().trim();
+      
+      // Map to icon URL - use the same base URL as the energy icons for consistency
+      const iconPath = `https://js.gatheringgames.co.uk/symbols/${normalizedRarity}.svg`;
+      
+      // Add style attributes directly to ensure proper display
+      return `<img src="${iconPath}" alt="${rarity}" class="rarity-icon" style="height:16px; max-width:none; border-radius:0; overflow:visible;">`;
+    }
+
+    // Define the rarity order for sorting
+    const RARITY_ORDER = {
+      'Common': 1,
+      'Uncommon': 2,
+      'Rare': 3,
+      'Double Rare': 4,
+      'Illustration Rare': 5,
+      'Ultra Rare': 6,
+      'Special Illustration Rare': 7,
+      'Hyper Rare': 8
+    };
+
+    // Function to create filter controls
+    function createFilterControls() {
+      // Try to get the filter placeholder first
+      const filterPlaceholder = document.querySelector('.pokemon-set-filter-placeholder');
+      
+      // If placeholder exists, place filters there
+      if (filterPlaceholder) {
+        // Collect all types and rarities that exist in the data
+        const allTypes = new Set();
+        const allRarities = new Set();
+        
+        // Process all cards to get unique types and rarities
+        document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
+          // Get rarity
+          const rarity = card.dataset.rarity;
+          if (rarity) allRarities.add(rarity);
+          
+          // Get types for Pokemon cards
+          const types = card.dataset.types ? card.dataset.types.split(', ') : [];
           types.forEach(type => {
             if (type) allTypes.add(type);
           });
-        }
-      }
-    });
-    
-    // Initialize filterState with all types and rarities
-    filterState.allTypes = new Set(allTypes);
-    filterState.allRarities = new Set(allRarities);
-    
-    // By default, all options are selected
-    filterState.types = new Set(allTypes);
-    filterState.rarities = new Set(allRarities);
-    
-    // Create filter controls container
-    const filterControls = document.createElement('div');
-    filterControls.className = 'pokemon-set-filter-controls';
-    
-    // Create type filter dropdown
-    const typeDropdown = document.createElement('div');
-    typeDropdown.className = 'filter-dropdown';
-    typeDropdown.innerHTML = `
-      <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
-      <div class="filter-dropdown-content" id="typeFilterContent">
-        ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => {
-          // Only include types that exist in our data
-          if (!allTypes.has(type)) return '';
           
-          return `
-            <label class="filter-checkbox-item">
-              <input type="checkbox" value="${type}" data-filter-type="type" checked>
-              ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
-              ${type}
-            </label>
-          `;
-        }).filter(html => html !== '').join('')}
-      </div>
-    `;
-    
-    // Create rarity filter dropdown
-    const rarityDropdown = document.createElement('div');
-    rarityDropdown.className = 'filter-dropdown';
-    rarityDropdown.innerHTML = `
-      <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
-      <div class="filter-dropdown-content" id="rarityFilterContent">
-        ${Array.from(allRarities)
-          // Sort by the predefined rarity order
-          .sort((a, b) => {
-            const orderA = RARITY_ORDER[a] || 999; // Default high value for unknown rarities
-            const orderB = RARITY_ORDER[b] || 999;
-            return orderA - orderB;
-          })
-          .map(rarity => {
-            const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
-            return `
-              <label class="filter-checkbox-item">
-                <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
-                <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
-                ${rarity}
-              </label>
-            `;
-          }).join('')}
-      </div>
-    `;
-    
-    // Create clear all filters button
-    const clearFiltersButton = document.createElement('button');
-    clearFiltersButton.className = 'filter-clear-all';
-    clearFiltersButton.textContent = 'Reset Filters';
-    clearFiltersButton.style.display = 'none'; // Hide initially
-    
-    // Add elements to the filter controls
-    filterControls.appendChild(typeDropdown);
-    filterControls.appendChild(rarityDropdown);
-    filterControls.appendChild(clearFiltersButton);
-    
-    // Insert the filter controls before the grid
-    gridContainer.parentNode.insertBefore(filterControls, gridContainer);
-    
-    // Toggle dropdowns
-    document.getElementById('typeFilterButton').addEventListener('click', function(e) {
-      e.stopPropagation();
-      document.getElementById('rarityFilterContent').parentElement.classList.remove('show');
-      this.parentElement.classList.toggle('show');
-    });
-    
-    document.getElementById('rarityFilterButton').addEventListener('click', function(e) {
-      e.stopPropagation();
-      document.getElementById('typeFilterContent').parentElement.classList.remove('show');
-      this.parentElement.classList.toggle('show');
-    });
-    
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.filter-dropdown')) {
-        document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
-          dropdown.classList.remove('show');
+          // Add supertype for non-Pokemon cards
+          const supertype = card.dataset.supertype;
+          if (supertype === 'Trainer') {
+            allTypes.add('Trainer');
+          } else if (supertype === 'Energy') {
+            if (card.dataset.subtype === 'Special') {
+              allTypes.add('Special Energy');
+            } else {
+              // Regular energy uses its type
+              types.forEach(type => {
+                if (type) allTypes.add(type);
+              });
+            }
+          }
         });
-      }
-    });
-    
-    // Handle checkbox changes
-    document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        const filterType = this.dataset.filterType;
-        const value = this.value;
         
-        if (this.checked) {
-          filterState[filterType + 's'].add(value);
-        } else {
-          filterState[filterType + 's'].delete(value);
+        // Initialize filterState with all types and rarities
+        filterState.allTypes = new Set(allTypes);
+        filterState.allRarities = new Set(allRarities);
+        
+        // By default, all options are selected
+        filterState.types = new Set(allTypes);
+        filterState.rarities = new Set(allRarities);
+        
+        // Create filter controls container
+        const filterControls = document.createElement('div');
+        filterControls.className = 'pokemon-set-filter-controls';
+        
+        // Create type filter dropdown
+        const typeDropdown = document.createElement('div');
+        typeDropdown.className = 'filter-dropdown';
+        typeDropdown.innerHTML = `
+          <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
+          <div class="filter-dropdown-content" id="typeFilterContent">
+            ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => {
+              // Only include types that exist in our data
+              if (!allTypes.has(type)) return '';
+              
+              return `
+                <label class="filter-checkbox-item">
+                  <input type="checkbox" value="${type}" data-filter-type="type" checked>
+                  ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
+                  ${type}
+                </label>
+              `;
+            }).filter(html => html !== '').join('')}
+          </div>
+        `;
+        
+        // Create rarity filter dropdown
+        const rarityDropdown = document.createElement('div');
+        rarityDropdown.className = 'filter-dropdown';
+        rarityDropdown.innerHTML = `
+          <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
+          <div class="filter-dropdown-content" id="rarityFilterContent">
+            ${Array.from(allRarities)
+              // Sort by the predefined rarity order
+              .sort((a, b) => {
+                const orderA = RARITY_ORDER[a] || 999; // Default high value for unknown rarities
+                const orderB = RARITY_ORDER[b] || 999;
+                return orderA - orderB;
+              })
+              .map(rarity => {
+                const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
+                return `
+                  <label class="filter-checkbox-item">
+                    <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
+                    <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
+                    ${rarity}
+                  </label>
+                `;
+              }).join('')}
+          </div>
+        `;
+        
+        // Create clear all filters button
+        const clearFiltersButton = document.createElement('button');
+        clearFiltersButton.className = 'filter-clear-all';
+        clearFiltersButton.textContent = 'Reset Filters';
+        clearFiltersButton.style.display = 'none'; // Hide initially
+        
+        // Add elements to the filter controls
+        filterControls.appendChild(typeDropdown);
+        filterControls.appendChild(rarityDropdown);
+        filterControls.appendChild(clearFiltersButton);
+        
+        // Replace the placeholder with our filter controls
+        filterPlaceholder.replaceWith(filterControls);
+        
+        // Toggle dropdowns
+        document.getElementById('typeFilterButton').addEventListener('click', function(e) {
+          e.stopPropagation();
+          document.getElementById('rarityFilterContent').parentElement.classList.remove('show');
+          this.parentElement.classList.toggle('show');
+        });
+        
+        document.getElementById('rarityFilterButton').addEventListener('click', function(e) {
+          e.stopPropagation();
+          document.getElementById('typeFilterContent').parentElement.classList.remove('show');
+          this.parentElement.classList.toggle('show');
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.filter-dropdown')) {
+            document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+              dropdown.classList.remove('show');
+            });
+          }
+        });
+        
+        // Handle checkbox changes
+        document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+          checkbox.addEventListener('change', function() {
+            const filterType = this.dataset.filterType;
+            const value = this.value;
+            
+            if (this.checked) {
+              filterState[filterType + 's'].add(value);
+            } else {
+              filterState[filterType + 's'].delete(value);
+            }
+            
+            applyFilters();
+            updateFilterButtons();
+          });
+        });
+        
+        // Reset all filters
+        clearFiltersButton.addEventListener('click', function() {
+          // Reset to all filters selected
+          filterState.types = new Set(filterState.allTypes);
+          filterState.rarities = new Set(filterState.allRarities);
+          
+          // Check all checkboxes
+          document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+            checkbox.checked = true;
+          });
+          
+          applyFilters();
+          updateFilterButtons();
+        });
+        
+        // Function to update filter button labels
+        function updateFilterButtons() {
+          const typeButton = document.getElementById('typeFilterButton');
+          const rarityButton = document.getElementById('rarityFilterButton');
+          
+          // Count deselected items instead of selected ones
+          const typeCount = filterState.allTypes.size - filterState.types.size;
+          const rarityCount = filterState.allRarities.size - filterState.rarities.size;
+          
+          typeButton.textContent = typeCount > 0 ? `Card Type (${typeCount} hidden)` : 'Card Type';
+          rarityButton.textContent = rarityCount > 0 ? `Rarity (${rarityCount} hidden)` : 'Rarity';
+          
+          typeButton.classList.toggle('filter-applied', typeCount > 0);
+          rarityButton.classList.toggle('filter-applied', rarityCount > 0);
+          
+          clearFiltersButton.style.display = 
+            (filterState.types.size < filterState.allTypes.size || 
+            filterState.rarities.size < filterState.allRarities.size) ? 'block' : 'none';
         }
+      } else {
+        // Fallback to the original method if placeholder doesn't exist
+        const gridContainer = document.querySelector('.pokemon-set-list-grid');
+        if (!gridContainer) return;
         
-        applyFilters();
-        updateFilterButtons();
-      });
-    });
-    
-    // Reset all filters
-    clearFiltersButton.addEventListener('click', function() {
-      // Reset to all filters selected
-      filterState.types = new Set(filterState.allTypes);
-      filterState.rarities = new Set(filterState.allRarities);
+        // Collect all types and rarities that exist in the data
+        const gridAllTypes = new Set();
+        const gridAllRarities = new Set();
+        
+        // Process all cards to get unique types and rarities
+        document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
+          // Get rarity
+          const rarity = card.dataset.rarity;
+          if (rarity) gridAllRarities.add(rarity);
+          
+          // Get types for Pokemon cards
+          const types = card.dataset.types ? card.dataset.types.split(', ') : [];
+          types.forEach(type => {
+            if (type) gridAllTypes.add(type);
+          });
+          
+          // Add supertype for non-Pokemon cards
+          const supertype = card.dataset.supertype;
+          if (supertype === 'Trainer') {
+            gridAllTypes.add('Trainer');
+          } else if (supertype === 'Energy') {
+            if (card.dataset.subtype === 'Special') {
+              gridAllTypes.add('Special Energy');
+            } else {
+              // Regular energy uses its type
+              types.forEach(type => {
+                if (type) gridAllTypes.add(type);
+              });
+            }
+          }
+        });
+        
+        // Initialize filterState with all types and rarities
+        filterState.allTypes = new Set(gridAllTypes);
+        filterState.allRarities = new Set(gridAllRarities);
+        
+        // By default, all options are selected
+        filterState.types = new Set(gridAllTypes);
+        filterState.rarities = new Set(gridAllRarities);
+        
+        // Create filter controls container
+        const filterControls = document.createElement('div');
+        filterControls.className = 'pokemon-set-filter-controls';
       
-      // Check all checkboxes
-      document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
-        checkbox.checked = true;
-      });
+        // Create type filter dropdown
+        const typeDropdown = document.createElement('div');
+        typeDropdown.className = 'filter-dropdown';
+        typeDropdown.innerHTML = `
+          <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
+          <div class="filter-dropdown-content" id="typeFilterContent">
+            ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => {
+              // Only include types that exist in our data
+              if (!gridAllTypes.has(type)) return '';
+              
+              return `
+                <label class="filter-checkbox-item">
+                  <input type="checkbox" value="${type}" data-filter-type="type" checked>
+                  ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
+                  ${type}
+                </label>
+              `;
+            }).filter(html => html !== '').join('')}
+          </div>
+        `;
       
-      applyFilters();
-      updateFilterButtons();
-    });
-    
-    // Function to update filter button labels
-    function updateFilterButtons() {
-      const typeButton = document.getElementById('typeFilterButton');
-      const rarityButton = document.getElementById('rarityFilterButton');
+        // Create rarity filter dropdown
+        const rarityDropdown = document.createElement('div');
+        rarityDropdown.className = 'filter-dropdown';
+        rarityDropdown.innerHTML = `
+          <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
+          <div class="filter-dropdown-content" id="rarityFilterContent">
+            ${Array.from(gridAllRarities)
+              // Sort by the predefined rarity order
+              .sort((a, b) => {
+                const orderA = RARITY_ORDER[a] || 999; // Default high value for unknown rarities
+                const orderB = RARITY_ORDER[b] || 999;
+                return orderA - orderB;
+              })
+              .map(rarity => {
+                const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
+                return `
+                  <label class="filter-checkbox-item">
+                    <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
+                    <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
+                    ${rarity}
+                  </label>
+                `;
+              }).join('')}
+          </div>
+        `;
       
-      // Count deselected items instead of selected ones
-      const typeCount = filterState.allTypes.size - filterState.types.size;
-      const rarityCount = filterState.allRarities.size - filterState.rarities.size;
-      
-      typeButton.textContent = typeCount > 0 ? `Card Type (${typeCount} hidden)` : 'Card Type';
-      rarityButton.textContent = rarityCount > 0 ? `Rarity (${rarityCount} hidden)` : 'Rarity';
-      
-      typeButton.classList.toggle('filter-applied', typeCount > 0);
-      rarityButton.classList.toggle('filter-applied', rarityCount > 0);
-      
-      clearFiltersButton.style.display = 
-        (filterState.types.size < filterState.allTypes.size || 
-        filterState.rarities.size < filterState.allRarities.size) ? 'block' : 'none';
+        // Create clear all filters button
+        const clearFiltersButton = document.createElement('button');
+        clearFiltersButton.className = 'filter-clear-all';
+        clearFiltersButton.textContent = 'Reset Filters';
+        clearFiltersButton.style.display = 'none'; // Hide initially
+        
+        // Add elements to the filter controls
+        filterControls.appendChild(typeDropdown);
+        filterControls.appendChild(rarityDropdown);
+        filterControls.appendChild(clearFiltersButton);
+        
+        // Insert the filter controls before the grid
+        gridContainer.parentNode.insertBefore(filterControls, gridContainer);
+        
+        // Toggle dropdowns
+        document.getElementById('typeFilterButton').addEventListener('click', function(e) {
+          e.stopPropagation();
+          document.getElementById('rarityFilterContent').parentElement.classList.remove('show');
+          this.parentElement.classList.toggle('show');
+        });
+        
+        document.getElementById('rarityFilterButton').addEventListener('click', function(e) {
+          e.stopPropagation();
+          document.getElementById('typeFilterContent').parentElement.classList.remove('show');
+          this.parentElement.classList.toggle('show');
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.filter-dropdown')) {
+            document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+              dropdown.classList.remove('show');
+            });
+          }
+        });
+        
+        // Handle checkbox changes
+        document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+          checkbox.addEventListener('change', function() {
+            const filterType = this.dataset.filterType;
+            const value = this.value;
+            
+            if (this.checked) {
+              filterState[filterType + 's'].add(value);
+            } else {
+              filterState[filterType + 's'].delete(value);
+            }
+            
+            applyFilters();
+            updateFilterButtons();
+          });
+        });
+        
+        // Reset all filters
+        clearFiltersButton.addEventListener('click', function() {
+          // Reset to all filters selected
+          filterState.types = new Set(filterState.allTypes);
+          filterState.rarities = new Set(filterState.allRarities);
+          
+          // Check all checkboxes
+          document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+            checkbox.checked = true;
+          });
+          
+          applyFilters();
+          updateFilterButtons();
+        });
+        
+        // Function to update filter button labels
+        function updateFilterButtons() {
+          const typeButton = document.getElementById('typeFilterButton');
+          const rarityButton = document.getElementById('rarityFilterButton');
+          
+          // Count deselected items instead of selected ones
+          const typeCount = filterState.allTypes.size - filterState.types.size;
+          const rarityCount = filterState.allRarities.size - filterState.rarities.size;
+          
+          typeButton.textContent = typeCount > 0 ? `Card Type (${typeCount} hidden)` : 'Card Type';
+          rarityButton.textContent = rarityCount > 0 ? `Rarity (${rarityCount} hidden)` : 'Rarity';
+          
+          typeButton.classList.toggle('filter-applied', typeCount > 0);
+          rarityButton.classList.toggle('filter-applied', rarityCount > 0);
+          
+          clearFiltersButton.style.display = 
+            (filterState.types.size < filterState.allTypes.size || 
+            filterState.rarities.size < filterState.allRarities.size) ? 'block' : 'none';
+        }
+      }
     }
-  }
-  
-  // Function to apply the current filters
-  function applyFilters() {
-    const cards = document.querySelectorAll('.pokemon-set-list-card');
     
-    cards.forEach(card => {
-      let showCard = true;
+    // Function to apply the current filters
+    function applyFilters() {
+      const cards = document.querySelectorAll('.pokemon-set-list-card');
       
-      // Get the card's types
-      const cardTypes = card.dataset.types ? card.dataset.types.split(', ') : [];
-      const cardSupertype = card.dataset.supertype;
-      const cardRarity = card.dataset.rarity;
-      
-      // Check type filter
-      let typeMatch = false;
-      
-      if (cardSupertype === 'Trainer' && filterState.types.has('Trainer')) {
-        typeMatch = true;
-      } else if (cardSupertype === 'Energy') {
-        if (card.dataset.subtype === 'Special' && filterState.types.has('Special Energy')) {
+      cards.forEach(card => {
+        let showCard = true;
+        
+        // Get the card's types
+        const cardTypes = card.dataset.types ? card.dataset.types.split(', ') : [];
+        const cardSupertype = card.dataset.supertype;
+        const cardRarity = card.dataset.rarity;
+        
+        // Check type filter
+        let typeMatch = false;
+        
+        if (cardSupertype === 'Trainer' && filterState.types.has('Trainer')) {
           typeMatch = true;
+        } else if (cardSupertype === 'Energy') {
+          if (card.dataset.subtype === 'Special' && filterState.types.has('Special Energy')) {
+            typeMatch = true;
+          } else if (cardTypes.some(type => filterState.types.has(type))) {
+            typeMatch = true;
+          }
         } else if (cardTypes.some(type => filterState.types.has(type))) {
           typeMatch = true;
         }
-      } else if (cardTypes.some(type => filterState.types.has(type))) {
-        typeMatch = true;
+        
+        // If no type match, don't show the card
+        if (!typeMatch) showCard = false;
+        
+        // Check rarity filter - Only apply if type filter passed
+        if (showCard && cardRarity && !filterState.rarities.has(cardRarity)) {
+          showCard = false;
+        }
+        
+        // Show or hide the card
+        card.classList.toggle('filtered-out', !showCard);
+      });
+      
+      // Log the current state for debugging
+      console.log('Filter state:', {
+        typesSelected: Array.from(filterState.types),
+        raritiesSelected: Array.from(filterState.rarities),
+        allTypes: Array.from(filterState.allTypes),
+        allRarities: Array.from(filterState.allRarities)
+      });
+    }
+  })();
+});
+
+// Add a delayed fallback check in case DOMContentLoaded has already fired
+if (document.readyState === "complete" || document.readyState === "interactive") {
+  setTimeout(() => {
+    const filterControls = document.querySelector('.pokemon-set-filter-controls');
+    if (!filterControls) {
+      console.log("DOM already loaded, manually initializing filter controls");
+      const gridContainer = document.querySelector('.pokemon-set-list-grid');
+      if (gridContainer) {
+        const filterControls = document.createElement('div');
+        filterControls.className = 'pokemon-set-filter-controls';
+        filterControls.style.display = 'flex';
+        filterControls.style.justifyContent = 'center';
+        filterControls.style.margin = '20px 0';
+        filterControls.innerHTML = `
+          <div style="padding: 10px; background: #fff; margin: 0 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <button id="filterTypeBtn">Filter by Type</button>
+          </div>
+          <div style="padding: 10px; background: #fff; margin: 0 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <button id="filterRarityBtn">Filter by Rarity</button>
+          </div>
+        `;
+        
+        // Insert before the grid
+        gridContainer.parentNode.insertBefore(filterControls, gridContainer);
       }
-      
-      // If no type match, don't show the card
-      if (!typeMatch) showCard = false;
-      
-      // Check rarity filter - Only apply if type filter passed
-      if (showCard && cardRarity && !filterState.rarities.has(cardRarity)) {
-        showCard = false;
-      }
-      
-      // Show or hide the card
-      card.classList.toggle('filtered-out', !showCard);
-    });
-    
-    // Log the current state for debugging
-    console.log('Filter state:', {
-      typesSelected: Array.from(filterState.types),
-      raritiesSelected: Array.from(filterState.rarities),
-      allTypes: Array.from(filterState.allTypes),
-      allRarities: Array.from(filterState.allRarities)
-    });
-  }
-})();
+    }
+  }, 500);
+}

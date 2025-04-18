@@ -11,8 +11,14 @@ cards = data["data"]
 # Create a folder for assets
 output_path = Path("journey_together_embed.html")
 
-# Start HTML with just the grid
-html = '<div class="pokemon-set-list-grid">'
+# Start HTML with a container for the whole experience
+html = '<div class="pokemon-set-container">'
+
+# This div is where filter controls will be inserted by JavaScript
+html += '<div class="pokemon-set-filter-placeholder"></div>'
+
+# Add the grid for cards
+html += '<div class="pokemon-set-list-grid">'
 
 ENERGY_SYMBOLS = {
     "Grass": "G",
@@ -113,11 +119,14 @@ for card in cards:
         </div>
         '''
 
+# Close the grid div
+html += '</div>'
+
 # Add the modal container
-html += '''
-</div>
-<div class="poke-embed-modal" id="pokeEmbedModal"></div>
-'''
+html += '<div class="poke-embed-modal" id="pokeEmbedModal"></div>'
+
+# Close the main container
+html += '</div>'
 
 # Add the Smart Snippet container
 html += '''
@@ -126,8 +135,11 @@ html += '''
 </div>
 '''
 
+# Add the script tag to load the card-list.js file
+html += '<script src="card-list.js"></script>'
+
 # Write to file
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(html)
 
-output_path.name
+print(output_path.name)
