@@ -1258,7 +1258,7 @@ document.head.appendChild(style);
     filterControls.appendChild(clearFiltersButton);
     
     // Insert the filter controls before the grid
-    gridContainer.parentNode.insertBefore(filterControls, gridContainer.parentNode.firstChild);
+    gridContainer.parentNode.insertBefore(filterControls, gridContainer);
     
     // Toggle dropdowns
     document.getElementById('typeFilterButton').addEventListener('click', function(e) {
