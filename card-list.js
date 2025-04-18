@@ -170,11 +170,38 @@ document.head.appendChild(style);
   style.textContent = `
     body.modal-open {
       overflow: hidden !important;
-      position: fixed !important;
-      width: 100% !important;
-      height: 100% !important;
-      top: 0 !important;
-      left: 0 !important;
+    }
+    .poke-embed-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center; /* Center vertically on desktop */
+      justify-content: center;
+      padding: 0;
+      z-index: 9999; /* Higher z-index to ensure it's above Shopify menu */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      text-align: left; /* Change from center to left */
+    }
+    .poke-embed-modal.show {
+      display: flex;
+    }
+    .poke-modal-close {
+      position: fixed; /* Changed from absolute to fixed */
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      z-index: 1001;
+      background: rgba(0, 0, 0, 0.7); /* Add background for visibility */
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .poke-embed {
       width: 100%;
@@ -531,7 +558,7 @@ document.head.appendChild(style);
     const modal = document.getElementById("pokeEmbedModal");
 
     if (!modal) return;
-
+    
     // Pre-fetch historical price data for all visible cards
     const visibleCards = Array.from(cards).filter(card => {
       const rect = card.getBoundingClientRect();
@@ -571,110 +598,101 @@ document.head.appendChild(style);
     // Wait for prefetch to complete
     await Promise.all(prefetchPromises);
 
-    cards.forEach(card => {
-      card.addEventListener("click", async () => {
-        const { id, name, set, number, image, rarity, text } = card.dataset;
-
-        // Store the current scroll position
-        const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-        
-        // Show loading state in modal immediately
-        modal.innerHTML = `
-          <div class="poke-embed">
-          <div class="poke-modal-close" id="pokeModalClose">✖</div>
-            <div class="poke-card-image">
-              <img src="https://images.pokemontcg.io/${set}/${number}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${number}_hires.png" />
-            </div>
-            <div class="poke-info">
-              <h3>${name}</h3>
-              <div class="poke-rarity">${rarity}</div>\n${renderAdditionalCardDetails(card.dataset)}
-              
-              <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
-              <div class="poke-currency-buttons">
-                <button class="active" data-currency="usd">USD</button>
-                <button data-currency="eur">EUR</button>
-                <button data-currency="gbp">GBP</button>
-              </div>
-              <canvas class="poke-price-chart"></canvas>
-              <div class="poke-range-buttons">
-                <button class="active" data-range="7">7d</button>
-                <button data-range="30">30d</button>
-                <button data-range="180">6mo</button>
-                <button data-range="365">1yr</button>
-              </div>
-              <div class="poke-price-note">Prices provided by TCGplayer</div>
-            </div>
+    // Function to open the modal
+    const openModal = async (card) => {
+      const { id, name, set, number, image, rarity, text } = card.dataset;
+      
+      // Show loading state in modal immediately
+      modal.innerHTML = `
+        <div class="poke-embed">
+        <div class="poke-modal-close" id="pokeModalClose">✖</div>
+          <div class="poke-card-image">
+            <img src="https://images.pokemontcg.io/${set}/${number}.png" alt="${name}" data-hires="https://images.pokemontcg.io/${set}/${number}_hires.png" />
           </div>
-        `;
-        
-        // Apply fixed position to body with the current scroll coordinates
-        document.body.classList.add("modal-open");
-        document.body.style.top = `-${scrollPosition}px`;
-        document.body.style.left = `-${scrollLeft}px`;
-        
-        modal.classList.add("show");
-        
-        // Reset modal scroll position
-        modal.scrollTop = 0;
-
-        // Set up close handlers immediately
-        const closeModal = () => {
-          document.body.classList.remove("modal-open");
-          modal.classList.remove("show");
-          
-          // Remove the inline styles
-          document.body.style.top = '';
-          document.body.style.left = '';
-          
-          // Restore the scroll position
-          window.scrollTo(scrollLeft, scrollPosition);
-        };
-
-        document.getElementById("pokeModalClose").onclick = closeModal;
-        modal.onclick = (e) => {
-          if (e.target === modal) closeModal();
-        };
-
-        // Check if we already have the price data in the cache
-        let prices, dates;
-        
-        if (historicalPriceCache.has(id)) {
-          const cachedData = historicalPriceCache.get(id);
-          prices = cachedData.prices;
-          dates = cachedData.dates;
-          console.log("Using cached historical price data for card:", id);
-        } else {
-          // Fetch the price data if not in cache
-          try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
-              headers: {
-                apikey: SUPABASE_KEY,
-                Authorization: `Bearer ${SUPABASE_KEY}`,
-              },
-            });
+          <div class="poke-info">
+            <h3>${name}</h3>
+            <div class="poke-rarity">${rarity}</div>\n${renderAdditionalCardDetails(card.dataset)}
             
-            if (res.ok) {
-              const priceData = await res.json();
-              prices = priceData.map(d => d.price_usd);
-              dates = priceData.map(d => d.date);
-              
-              // Cache the results for future use
-              historicalPriceCache.set(id, { prices, dates });
-            } else {
-              console.error("Failed to fetch price data for card:", id);
-              prices = [0];
-              dates = [new Date().toISOString().split('T')[0]];
-            }
-          } catch (error) {
-            console.error("Error fetching prices for card:", id);
+            <div class="poke-price-label">Current Market Price: <span class="poke-current-price">Loading...</span></div>
+            <div class="poke-currency-buttons">
+              <button class="active" data-currency="usd">USD</button>
+              <button data-currency="eur">EUR</button>
+              <button data-currency="gbp">GBP</button>
+            </div>
+            <canvas class="poke-price-chart"></canvas>
+            <div class="poke-range-buttons">
+              <button class="active" data-range="7">7d</button>
+              <button data-range="30">30d</button>
+              <button data-range="180">6mo</button>
+              <button data-range="365">1yr</button>
+            </div>
+            <div class="poke-price-note">Prices provided by TCGplayer</div>
+          </div>
+        </div>
+      `;
+      
+      // Show modal
+      modal.classList.add("show");
+      document.body.classList.add("modal-open");
+      
+      // Reset modal scroll position
+      modal.scrollTop = 0;
+      
+      // Set up close handler
+      document.getElementById("pokeModalClose").onclick = closeModal;
+      modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+      };
+      
+      // Check if we already have the price data in the cache
+      let prices, dates;
+      
+      if (historicalPriceCache.has(id)) {
+        const cachedData = historicalPriceCache.get(id);
+        prices = cachedData.prices;
+        dates = cachedData.dates;
+        console.log("Using cached historical price data for card:", id);
+      } else {
+        // Fetch the price data if not in cache
+        try {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/pokemon_card_prices?select=date,price_usd&card_id=eq.${id}&order=date.asc`, {
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+            },
+          });
+          
+          if (res.ok) {
+            const priceData = await res.json();
+            prices = priceData.map(d => d.price_usd);
+            dates = priceData.map(d => d.date);
+            
+            // Cache the results for future use
+            historicalPriceCache.set(id, { prices, dates });
+          } else {
+            console.error("Failed to fetch price data for card:", id);
             prices = [0];
             dates = [new Date().toISOString().split('T')[0]];
           }
+        } catch (error) {
+          console.error("Error fetching prices for card:", id);
+          prices = [0];
+          dates = [new Date().toISOString().split('T')[0]];
         }
-        
-        setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
-      });
+      }
+      
+      setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
+    };
+    
+    // Function to close the modal
+    const closeModal = () => {
+      document.body.classList.remove("modal-open");
+      modal.classList.remove("show");
+    };
+    
+    // Add click handlers to all cards
+    cards.forEach(card => {
+      card.addEventListener("click", () => openModal(card));
     });
   }
 
