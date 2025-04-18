@@ -1,4 +1,3 @@
-
 // == Pokemon Embed Script ==
 const style = document.createElement("style");
 style.textContent = `
@@ -173,27 +172,32 @@ document.head.appendChild(style);
       display: flex;
       flex-direction: column;
       justify-content: center;
+      text-align: left;
     }
     .poke-info h3 {
       margin-top: 0;
       color: white;
+      text-align: left;
     }
     .poke-rarity {
       margin-bottom: 0.5em;
       color: #ccc;
+      text-align: left;
     }
     .poke-text, .poke-ability, .poke-attack-text {
       font-size: 14px;
       line-height: 1.4;
       margin-bottom: 0.5em;
+      text-align: left;
     }
     .poke-price-label {
       font-weight: bold;
       margin-top: 0.5em;
+      text-align: left;
     }
     .poke-currency-buttons, .poke-range-buttons {
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 0.5em;
       margin-top: 0.5em;
     }
@@ -219,7 +223,16 @@ document.head.appendChild(style);
       font-size: 0.8em;
       margin-top: 4px;
       color: #ccc;
-      text-align: center;
+      text-align: left;
+    }
+    .poke-stats {
+      text-align: left;
+    }
+    .poke-type {
+      text-align: left;
+    }
+    .poke-attack {
+      text-align: left;
     }
     @media (max-width: 768px) {
       /* Remove nested media query */
@@ -235,7 +248,7 @@ document.head.appendChild(style);
       z-index: 9999; /* Higher z-index to ensure it's above Shopify menu */
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      text-align: center; /* Help with centering */
+      text-align: left; /* Change from center to left */
     }
     .poke-embed-modal.show {
       display: flex;
@@ -284,10 +297,17 @@ document.head.appendChild(style);
       .poke-info {
         width: 100%; /* Take full width */
         padding: 10px 0 0; /* Adjust padding */
+        text-align: left;
       }
       canvas.poke-price-chart {
         height: auto !important; /* Make chart height responsive */
         width: 100% !important; /* Make chart width responsive */
+      }
+      .poke-range-buttons, .poke-currency-buttons {
+        justify-content: center; /* Center these buttons only on mobile */
+      }
+      .poke-price-note {
+        text-align: center; /* Center the price note on mobile */
       }
     }
   `;
