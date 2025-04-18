@@ -330,6 +330,110 @@ canvas.poke-price-chart {
   outline: none;
   border-color: #394042;
 }
+
+/* Filter controls styles */
+.pokemon-set-filter-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.filter-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-dropdown-button {
+  padding: 8px 12px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 150px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-dropdown-button:after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #444;
+  margin-left: 8px;
+}
+
+.filter-dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 250px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  padding: 10px;
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  left: 0;
+  top: 100%;
+}
+
+.filter-dropdown.show .filter-dropdown-content {
+  display: block;
+}
+
+.filter-checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.filter-checkbox-item:hover {
+  background-color: #f5f5f5;
+}
+
+.filter-checkbox-item input {
+  margin-right: 8px;
+}
+
+.filter-type-icon, .filter-rarity-icon {
+  height: 16px;
+  width: auto;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.filter-applied {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+.filter-clear-all {
+  padding: 8px 12px;
+  background-color: #394042;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.filter-clear-all:hover {
+  background-color: #4a5457;
+}
+
+/* Card hiding for filters */
+.pokemon-set-list-card.filtered-out {
+  display: none;
+}
 `;
 document.head.appendChild(style);
 (async () => {
@@ -345,6 +449,28 @@ document.head.appendChild(style);
   
   // Cache for sorted cards to avoid resorting unnecessarily
   const sortedCardsCache = new Map();
+  
+  // Filter state
+  const filterState = {
+    types: new Set(),
+    rarities: new Set()
+  };
+
+  // Map of energy types to their icons
+  const TYPE_ICONS = {
+    "Grass": "https://js.gatheringgames.co.uk/symbols/grass.svg",
+    "Fire": "https://js.gatheringgames.co.uk/symbols/fire.svg",
+    "Water": "https://js.gatheringgames.co.uk/symbols/water.svg",
+    "Lightning": "https://js.gatheringgames.co.uk/symbols/lightning.svg",
+    "Psychic": "https://js.gatheringgames.co.uk/symbols/psychic.svg",
+    "Fighting": "https://js.gatheringgames.co.uk/symbols/fighting.svg",
+    "Darkness": "https://js.gatheringgames.co.uk/symbols/darkness.svg",
+    "Metal": "https://js.gatheringgames.co.uk/symbols/metal.svg",
+    "Dragon": "https://js.gatheringgames.co.uk/symbols/dragon.svg",
+    "Colorless": "https://js.gatheringgames.co.uk/symbols/colorless.svg",
+    "Trainer": "", // No specific icon for Trainer
+    "Special Energy": "https://js.gatheringgames.co.uk/symbols/colorless.svg" // Using colorless for special energy
+  };
 
   // Try to get exchange rates from localStorage first to reduce API calls
   let exchangeRates;
@@ -393,6 +519,9 @@ document.head.appendChild(style);
   
   // Load Chart.js and then initialize
   await loadChartJs();
+  
+  // Create and insert filter controls
+  createFilterControls();
   
   // Create and insert sort controls
   createSortControls();
@@ -1004,5 +1133,184 @@ document.head.appendChild(style);
     
     // Add style attributes directly to ensure proper display
     return `<img src="${iconPath}" alt="${rarity}" class="rarity-icon" style="height:16px; max-width:none; border-radius:0; overflow:visible;">`;
+  }
+
+  // Function to create filter controls
+  function createFilterControls() {
+    const gridContainer = document.querySelector('.pokemon-set-list-grid');
+    if (!gridContainer) return;
+    
+    // Create filter controls container
+    const filterControls = document.createElement('div');
+    filterControls.className = 'pokemon-set-filter-controls';
+    
+    // Create type filter dropdown
+    const typeDropdown = document.createElement('div');
+    typeDropdown.className = 'filter-dropdown';
+    typeDropdown.innerHTML = `
+      <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
+      <div class="filter-dropdown-content" id="typeFilterContent">
+        ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => `
+          <label class="filter-checkbox-item">
+            <input type="checkbox" value="${type}" data-filter-type="type">
+            ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
+            ${type}
+          </label>
+        `).join('')}
+      </div>
+    `;
+    
+    // Create rarity filter dropdown
+    const rarityDropdown = document.createElement('div');
+    rarityDropdown.className = 'filter-dropdown';
+    rarityDropdown.innerHTML = `
+      <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
+      <div class="filter-dropdown-content" id="rarityFilterContent">
+        <!-- Will be populated dynamically -->
+      </div>
+    `;
+    
+    // Create clear all filters button
+    const clearFiltersButton = document.createElement('button');
+    clearFiltersButton.className = 'filter-clear-all';
+    clearFiltersButton.textContent = 'Clear Filters';
+    clearFiltersButton.style.display = 'none'; // Hide initially
+    
+    // Add elements to the filter controls
+    filterControls.appendChild(typeDropdown);
+    filterControls.appendChild(rarityDropdown);
+    filterControls.appendChild(clearFiltersButton);
+    
+    // Insert the filter controls before the grid
+    gridContainer.parentNode.insertBefore(filterControls, gridContainer.parentNode.firstChild);
+    
+    // Collect unique rarities from cards
+    const rarities = new Set();
+    document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
+      const rarity = card.dataset.rarity;
+      if (rarity) rarities.add(rarity);
+    });
+    
+    // Populate rarity filter dropdown
+    const rarityContent = document.getElementById('rarityFilterContent');
+    Array.from(rarities).sort().forEach(rarity => {
+      const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
+      const rarityItem = document.createElement('label');
+      rarityItem.className = 'filter-checkbox-item';
+      rarityItem.innerHTML = `
+        <input type="checkbox" value="${rarity}" data-filter-type="rarity">
+        <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
+        ${rarity}
+      `;
+      rarityContent.appendChild(rarityItem);
+    });
+    
+    // Toggle dropdowns
+    document.getElementById('typeFilterButton').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('rarityFilterContent').parentElement.classList.remove('show');
+      this.parentElement.classList.toggle('show');
+    });
+    
+    document.getElementById('rarityFilterButton').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('typeFilterContent').parentElement.classList.remove('show');
+      this.parentElement.classList.toggle('show');
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.filter-dropdown')) {
+        document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+          dropdown.classList.remove('show');
+        });
+      }
+    });
+    
+    // Handle checkbox changes
+    document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const filterType = this.dataset.filterType;
+        const value = this.value;
+        
+        if (this.checked) {
+          filterState[filterType + 's'].add(value);
+        } else {
+          filterState[filterType + 's'].delete(value);
+        }
+        
+        applyFilters();
+        updateFilterButtons();
+      });
+    });
+    
+    // Clear all filters
+    clearFiltersButton.addEventListener('click', function() {
+      filterState.types.clear();
+      filterState.rarities.clear();
+      
+      // Uncheck all checkboxes
+      document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      
+      applyFilters();
+      updateFilterButtons();
+    });
+    
+    // Function to update filter button labels
+    function updateFilterButtons() {
+      const typeButton = document.getElementById('typeFilterButton');
+      const rarityButton = document.getElementById('rarityFilterButton');
+      
+      typeButton.textContent = filterState.types.size ? `Card Type (${filterState.types.size})` : 'Card Type';
+      rarityButton.textContent = filterState.rarities.size ? `Rarity (${filterState.rarities.size})` : 'Rarity';
+      
+      typeButton.classList.toggle('filter-applied', filterState.types.size > 0);
+      rarityButton.classList.toggle('filter-applied', filterState.rarities.size > 0);
+      
+      clearFiltersButton.style.display = (filterState.types.size > 0 || filterState.rarities.size > 0) ? 'block' : 'none';
+    }
+  }
+  
+  // Function to apply the current filters
+  function applyFilters() {
+    const cards = document.querySelectorAll('.pokemon-set-list-card');
+    
+    cards.forEach(card => {
+      let showCard = true;
+      
+      // Type filtering
+      if (filterState.types.size > 0) {
+        // Get the card's type from types attribute or supertype for trainers
+        const cardTypes = card.dataset.types ? card.dataset.types.split(', ') : [];
+        const cardSupertype = card.dataset.supertype;
+        
+        // Handle trainer and energy cards
+        if (cardSupertype === 'Trainer' && filterState.types.has('Trainer')) {
+          // Card is a Trainer and Trainer filter is active, so keep it
+        } else if (cardSupertype === 'Energy' && card.dataset.subtype === 'Special' && filterState.types.has('Special Energy')) {
+          // Card is a Special Energy and Special Energy filter is active
+        } else if (cardTypes.length > 0) {
+          // For Pokémon cards, check if any of its types match the filter
+          const typeMatch = cardTypes.some(type => filterState.types.has(type));
+          if (!typeMatch) showCard = false;
+        } else {
+          // No matching type found
+          showCard = false;
+        }
+      }
+      
+      // Rarity filtering - only apply if card passed type filtering
+      if (showCard && filterState.rarities.size > 0) {
+        const cardRarity = card.dataset.rarity;
+        if (!filterState.rarities.has(cardRarity)) {
+          showCard = false;
+        }
+      }
+      
+      // Show or hide the card
+      card.classList.toggle('filtered-out', !showCard);
+    });
   }
 })();
