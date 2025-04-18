@@ -144,6 +144,14 @@ document.head.appendChild(style);
       overflow: hidden;
       position: fixed;
       width: 100%;
+      height: 100%;
+      touch-action: none;
+      -webkit-overflow-scrolling: none;
+      overscroll-behavior: none;
+    }
+    .poke-embed-modal {
+      overscroll-behavior: contain;
+      touch-action: pan-y pinch-zoom;
     }
     .poke-embed {
   width: 100%;
@@ -527,15 +535,32 @@ document.head.appendChild(style);
 
         
 
-        // Show modal and prevent background scrolling
+        // Store current scroll position and prevent background scrolling
+        const scrollY = window.scrollY;
+        document.body.style.top = `-${scrollY}px`;
         modal.classList.add("show");
         document.body.classList.add("modal-open");
+
+        // Prevent touch events from propagating when reaching scroll boundaries
+        modal.addEventListener('touchmove', (e) => {
+          const modalContent = modal.querySelector('.poke-embed');
+          const isAtTop = modalContent.scrollTop === 0;
+          const isAtBottom = modalContent.scrollHeight - modalContent.scrollTop === modalContent.clientHeight;
+          
+          if ((isAtTop && e.touches[0].clientY > 0) || 
+              (isAtBottom && e.touches[0].clientY < 0)) {
+            e.preventDefault();
+          }
+        }, { passive: false });
         setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
 
         // Handle modal closing
         const closeModal = () => {
-          modal.classList.remove("show");
+          const scrollY = parseInt(document.body.style.top || '0');
           document.body.classList.remove("modal-open");
+          document.body.style.top = '';
+          modal.classList.remove("show");
+          window.scrollTo(0, -scrollY);
         };
 
         document.getElementById("pokeModalClose").onclick = closeModal;
