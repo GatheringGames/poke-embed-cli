@@ -46,10 +46,15 @@ style.textContent = `
   font-style: italic;
 }
 .poke-ability {
-  margin-top: 0.5em;
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
 }
 .poke-attack {
-  margin-top: 0.75em;
+  margin-top: 0.35em;
+  margin-bottom: 0.35em;
+}
+.poke-attack-text {
+  margin-top: 0.1em;
 }
 .poke-embed-modal {
   position: fixed;
@@ -248,7 +253,7 @@ document.head.appendChild(style);
     }
     .poke-price-label {
       font-weight: bold;
-      margin-top: 0.5em;
+      margin-top: 1.5em;
       text-align: left;
     }
     .poke-currency-buttons, .poke-range-buttons {
@@ -435,7 +440,9 @@ document.head.appendChild(style);
       </div>
       ${abilityInfo}
       ${rulesText}
-      ${attacksHtml}
+      <div class="poke-attacks-container">
+        ${attacksHtml}
+      </div>
     `;
 
   }
