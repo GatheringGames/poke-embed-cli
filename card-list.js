@@ -523,16 +523,16 @@ document.head.appendChild(style);
   // Load Chart.js and then initialize
   await loadChartJs();
   
-  // Create and insert filter controls
-  createFilterControls();
-  
-  // Create and insert sort controls
-  createSortControls();
-  
   // Load cards in a more efficient order - do prices first since they're most visible
   loadGridPrices();
   initGridCardClicks();
   initEmbeds();
+  
+  // Create and insert sort controls
+  createSortControls();
+  
+  // Create and insert filter controls - do this last
+  createFilterControls();
 
   const ENERGY_ICON_URLS = {
     G: "https://js.gatheringgames.co.uk/symbols/grass.svg",
