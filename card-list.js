@@ -989,8 +989,8 @@ document.head.appendChild(style);
     // Normalize the rarity to lowercase and handle special cases
     const normalizedRarity = rarity.toLowerCase().trim();
     
-    // Map to icon URL
-    const iconPath = `./symbols/${normalizedRarity}.svg`;
+    // Map to icon URL - use the same base URL as the energy icons for consistency
+    const iconPath = `https://js.gatheringgames.co.uk/symbols/${normalizedRarity}.svg`;
     
     return `<img src="${iconPath}" alt="${rarity}" class="rarity-icon">`;
   }
