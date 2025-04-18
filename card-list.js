@@ -542,8 +542,9 @@ document.head.appendChild(style);
           </div>
         `;
 
+        // Store the current scroll position
+        const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
         
-
         // Prevent background scrolling without storing position
         document.body.classList.add("modal-open");
         modal.classList.add("show");
@@ -552,10 +553,18 @@ document.head.appendChild(style);
         modal.scrollTop = 0;
         setupEmbed(modal.querySelector(".poke-embed"), id, prices, dates);
 
-        // Handle modal closing - simpler approach
+        // Handle modal closing - restore scroll position
         const closeModal = () => {
           document.body.classList.remove("modal-open");
           modal.classList.remove("show");
+          
+          // Restore the scroll position after a short delay
+          setTimeout(() => {
+            window.scrollTo({
+              top: scrollPosition,
+              behavior: "instant"
+            });
+          }, 10);
         };
 
         document.getElementById("pokeModalClose").onclick = closeModal;
