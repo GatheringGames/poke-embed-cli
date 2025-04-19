@@ -504,16 +504,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Map of energy types to their icons
     const TYPE_ICONS = {
-      "Grass": "../assets/symbols/grass.svg",
-      "Fire": "../assets/symbols/fire.svg",
-      "Water": "../assets/symbols/water.svg",
-      "Lightning": "../assets/symbols/lightning.svg",
-      "Psychic": "../assets/symbols/psychic.svg",
-      "Fighting": "../assets/symbols/fighting.svg",
-      "Darkness": "../assets/symbols/darkness.svg",
-      "Metal": "../assets/symbols/metal.svg",
-      "Dragon": "../assets/symbols/dragon.svg",
-      "Colorless": "../assets/symbols/colorless.svg",
+      "Grass": "https://js.gatheringgames.co.uk/assets/symbols/grass.svg",
+      "Fire": "https://js.gatheringgames.co.uk/assets/symbols/fire.svg",
+      "Water": "https://js.gatheringgames.co.uk/assets/symbols/water.svg",
+      "Lightning": "https://js.gatheringgames.co.uk/assets/symbols/lightning.svg",
+      "Psychic": "https://js.gatheringgames.co.uk/assets/symbols/psychic.svg",
+      "Fighting": "https://js.gatheringgames.co.uk/assets/symbols/fighting.svg",
+      "Darkness": "https://js.gatheringgames.co.uk/assets/symbols/darkness.svg",
+      "Metal": "https://js.gatheringgames.co.uk/assets/symbols/metal.svg",
+      "Dragon": "https://js.gatheringgames.co.uk/assets/symbols/dragon.svg",
+      "Colorless": "https://js.gatheringgames.co.uk/assets/symbols/colorless.svg",
       "Trainer": "", // No specific icon for Trainer
       "Special Energy": "" // No specific icon for Special Energy
     };
@@ -578,17 +578,17 @@ document.addEventListener("DOMContentLoaded", function() {
     createFilterControls();
 
     const ENERGY_ICON_URLS = {
-      G: "../assets/symbols/grass.svg",
-      R: "../assets/symbols/fire.svg",
-      W: "../assets/symbols/water.svg",
-      L: "../assets/symbols/lightning.svg",
-      P: "../assets/symbols/psychic.svg",
-      F: "../assets/symbols/fighting.svg",
-      D: "../assets/symbols/darkness.svg",
-      M: "../assets/symbols/metal.svg",
-      Y: "../assets/symbols/fairy.svg",
-      N: "../assets/symbols/dragon.svg",
-      C: "../assets/symbols/colorless.svg"
+      G: "https://js.gatheringgames.co.uk/assets/symbols/grass.svg",
+      R: "https://js.gatheringgames.co.uk/assets/symbols/fire.svg",
+      W: "https://js.gatheringgames.co.uk/assets/symbols/water.svg",
+      L: "https://js.gatheringgames.co.uk/assets/symbols/lightning.svg",
+      P: "https://js.gatheringgames.co.uk/assets/symbols/psychic.svg",
+      F: "https://js.gatheringgames.co.uk/assets/symbols/fighting.svg",
+      D: "https://js.gatheringgames.co.uk/assets/symbols/darkness.svg",
+      M: "https://js.gatheringgames.co.uk/assets/symbols/metal.svg",
+      Y: "https://js.gatheringgames.co.uk/assets/symbols/fairy.svg",
+      N: "https://js.gatheringgames.co.uk/assets/symbols/dragon.svg",
+      C: "https://js.gatheringgames.co.uk/assets/symbols/colorless.svg"
     };
 
     function renderEnergySymbols(costStr) {
@@ -1175,7 +1175,7 @@ document.addEventListener("DOMContentLoaded", function() {
       const normalizedRarity = rarity.toLowerCase().trim();
       
       // Map to icon URL - use the same base URL as the energy icons for consistency
-      const iconPath = `../assets/symbols/${normalizedRarity}.svg`;
+      const iconPath = `https://js.gatheringgames.co.uk/assets/symbols/${normalizedRarity}.svg`;
       
       // Add style attributes directly to ensure proper display
       return `<img src="${iconPath}" alt="${rarity}" class="rarity-icon" style="height:16px; max-width:none; border-radius:0; overflow:visible;">`;
@@ -1270,16 +1270,16 @@ document.addEventListener("DOMContentLoaded", function() {
       // Add type checkboxes
       const typeContent = document.getElementById('typeFilterContent');
       const typeOptions = [
-        { value: 'Grass', icon: '../assets/symbols/grass.svg' },
-        { value: 'Fire', icon: '../assets/symbols/fire.svg' },
-        { value: 'Water', icon: '../assets/symbols/water.svg' },
-        { value: 'Lightning', icon: '../assets/symbols/lightning.svg' },
-        { value: 'Psychic', icon: '../assets/symbols/psychic.svg' },
-        { value: 'Fighting', icon: '../assets/symbols/fighting.svg' },
-        { value: 'Darkness', icon: '../assets/symbols/darkness.svg' },
-        { value: 'Metal', icon: '../assets/symbols/metal.svg' },
-        { value: 'Dragon', icon: '../assets/symbols/dragon.svg' },
-        { value: 'Colorless', icon: '../assets/symbols/colorless.svg' },
+        { value: 'Grass', icon: 'https://js.gatheringgames.co.uk/assets/symbols/grass.svg' },
+        { value: 'Fire', icon: 'https://js.gatheringgames.co.uk/assets/symbols/fire.svg' },
+        { value: 'Water', icon: 'https://js.gatheringgames.co.uk/assets/symbols/water.svg' },
+        { value: 'Lightning', icon: 'https://js.gatheringgames.co.uk/assets/symbols/lightning.svg' },
+        { value: 'Psychic', icon: 'https://js.gatheringgames.co.uk/assets/symbols/psychic.svg' },
+        { value: 'Fighting', icon: 'https://js.gatheringgames.co.uk/assets/symbols/fighting.svg' },
+        { value: 'Darkness', icon: 'https://js.gatheringgames.co.uk/assets/symbols/darkness.svg' },
+        { value: 'Metal', icon: 'https://js.gatheringgames.co.uk/assets/symbols/metal.svg' },
+        { value: 'Dragon', icon: 'https://js.gatheringgames.co.uk/assets/symbols/dragon.svg' },
+        { value: 'Colorless', icon: 'https://js.gatheringgames.co.uk/assets/symbols/colorless.svg' },
         { value: 'Trainer', icon: '' },
         { value: 'Special Energy', icon: '' }
       ];
