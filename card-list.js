@@ -401,6 +401,8 @@ canvas.poke-price-chart {
   align-items: center;
   padding: 6px 0;
   cursor: pointer;
+  text-align: left;
+  justify-content: flex-start;
 }
 
 .filter-checkbox-item:hover {
@@ -489,7 +491,7 @@ document.addEventListener("DOMContentLoaded", function() {
       "Dragon": "https://js.gatheringgames.co.uk/symbols/dragon.svg",
       "Colorless": "https://js.gatheringgames.co.uk/symbols/colorless.svg",
       "Trainer": "", // No specific icon for Trainer
-      "Special Energy": "https://js.gatheringgames.co.uk/symbols/colorless.svg" // Using colorless for special energy
+      "Special Energy": "" // No specific icon for Special Energy
     };
 
     // Try to get exchange rates from localStorage first to reduce API calls
@@ -1248,7 +1250,6 @@ document.addEventListener("DOMContentLoaded", function() {
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Special Energy" data-filter-type="type" checked>
-              <img src="https://js.gatheringgames.co.uk/symbols/colorless.svg" alt="Special Energy" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
               Special Energy
             </label>
           </div>

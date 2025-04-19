@@ -88,6 +88,15 @@ body {
 .pokemon-set-list-card.filtered-out {
   display: none;
 }
+
+.filter-checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  cursor: pointer;
+  text-align: left;
+  justify-content: flex-start;
+}
 `;
 
 // IIFE with debug additions
@@ -107,7 +116,7 @@ body {
     "Dragon": "https://js.gatheringgames.co.uk/symbols/dragon.svg",
     "Colorless": "https://js.gatheringgames.co.uk/symbols/colorless.svg",
     "Trainer": "", // No specific icon for Trainer
-    "Special Energy": "https://js.gatheringgames.co.uk/symbols/colorless.svg" // Using colorless for special energy
+    "Special Energy": "" // No specific icon for Special Energy
   };
 
   // Filter state - initialize with all types and rarities as selected
