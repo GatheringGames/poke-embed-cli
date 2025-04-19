@@ -4,18 +4,22 @@ const path = require('path');
 async function testRarityFilterCombinations() {
   console.log('Starting comprehensive rarity filter test...');
   
+  // Get the HTML file path from command line argument or use default
+  const htmlFile = process.argv[2] || 'src/pokemon-test.html';
+  console.log(`Testing HTML file: ${htmlFile}`);
+
   // Launch browser
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext();
   const page = await context.newPage();
 
   try {
-    // Get the absolute file path for the test HTML file
-    const htmlFilePath = path.resolve(__dirname, '..', 'src', 'pokemon-test.html');
-    const fileUrl = `file://${htmlFilePath}`;
+    // Get the absolute path to the HTML file
+    const filePath = path.resolve(htmlFile);
+    console.log(`Opening file: file://${filePath}`);
     
-    console.log(`Opening file: ${fileUrl}`);
-    await page.goto(fileUrl);
+    // Navigate to the HTML page
+    await page.goto(`file://${filePath}`);
 
     // Set up console logging from the browser
     page.on('console', msg => {
