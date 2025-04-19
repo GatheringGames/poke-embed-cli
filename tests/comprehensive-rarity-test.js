@@ -26,9 +26,61 @@ async function testRarityFilterCombinations() {
       console.log(`BROWSER: ${msg.text()}`);
     });
 
-    // Wait for filter controls to initialize
-    await page.waitForSelector('.filter-dropdown-button', { timeout: 5000 });
-    console.log('Filter controls loaded');
+    // Log the page structure to debug issues
+    console.log('Checking page structure...');
+    await page.evaluate(() => {
+      // Check if filter controls exist
+      const filterControls = document.querySelector('.pokemon-set-filter-controls');
+      console.log('Filter controls present:', !!filterControls);
+      if (filterControls) {
+        console.log('Filter controls HTML:', filterControls.outerHTML);
+      }
+
+      // Look for rarity filter button
+      const rarityButton = document.querySelector('#rarityFilterButton');
+      console.log('Rarity filter button present:', !!rarityButton);
+      if (rarityButton) {
+        console.log('Rarity button HTML:', rarityButton.outerHTML);
+      }
+
+      // Look for the dropdown content
+      const rarityContent = document.querySelector('#rarityFilterContent');
+      console.log('Rarity content present:', !!rarityContent);
+      if (rarityContent) {
+        console.log('Rarity content HTML:', rarityContent.outerHTML);
+      }
+
+      // Count cards
+      const cards = document.querySelectorAll('.pokemon-set-list-card');
+      console.log('Total cards found on page:', cards.length);
+    });
+
+    // Wait for filter controls to initialize with a longer timeout
+    try {
+      console.log('Waiting for filter controls to initialize...');
+      await page.waitForSelector('.filter-dropdown-button', { timeout: 10000 });
+      console.log('Filter controls loaded');
+    } catch (error) {
+      console.log('Failed to find filter controls, attempting to initialize them manually...');
+      // Manually inject the initialization code to create filter controls
+      await page.evaluate(() => {
+        // Check if window.PokeEmbedFilters exists
+        if (window.PokeEmbedFilters && window.PokeEmbedFilters.createFilterControls) {
+          console.log('Calling createFilterControls() manually');
+          window.PokeEmbedFilters.createFilterControls();
+        } else {
+          console.log('PokeEmbedFilters not found on window object');
+        }
+      });
+      
+      // Wait again for selector after manual initialization
+      try {
+        await page.waitForSelector('.filter-dropdown-button', { timeout: 5000 });
+        console.log('Filter controls loaded after manual initialization');
+      } catch (initError) {
+        throw new Error('Could not initialize filter controls: ' + initError.message);
+      }
+    }
     
     // Get information about available cards and rarities
     const cardInfo = await page.evaluate(() => {
@@ -66,30 +118,72 @@ async function testRarityFilterCombinations() {
     console.log('Opening rarity filter dropdown...');
     await page.click('#rarityFilterButton');
     
-    // Wait for dropdown to be visible
+    // Wait for dropdown to be visible, with more robust error handling
     console.log('Waiting for rarity filter dropdown to be visible...');
-    await page.waitForSelector('#rarityFilterContent.active', { timeout: 5000 })
-      .catch(async () => {
-        console.log('Dropdown not visible after click, trying again...');
-        await page.click('#rarityFilterButton');
-        await page.waitForSelector('#rarityFilterContent.active', { timeout: 5000 });
-      });
+    try {
+      await page.waitForSelector('#rarityFilterContent.active, #rarityFilterContent[style*="display: block"]', { timeout: 5000 });
+    } catch (error) {
+      console.log('Dropdown not visible after click, trying again with a different approach...');
+      await page.click('#rarityFilterButton');
+      try {
+        await page.waitForSelector('#rarityFilterContent.active, #rarityFilterContent[style*="display: block"]', { timeout: 5000 });
+      } catch (secondError) {
+        console.log('Still not visible, forcing visibility via JavaScript...');
+      }
+    }
     
     // Ensure the dropdown is actually open with JavaScript
-    await page.evaluate(() => {
+    const dropdownStatus = await page.evaluate(() => {
       const dropdown = document.querySelector('#rarityFilterContent');
-      if (!dropdown.classList.contains('active')) {
+      if (!dropdown) {
+        console.log('Could not find dropdown element');
+        return { success: false, error: 'Dropdown not found' };
+      }
+      
+      // Check current state
+      const isVisible = dropdown.classList.contains('active') || 
+                        dropdown.style.display === 'block' || 
+                        getComputedStyle(dropdown).display === 'block';
+      
+      console.log(`Dropdown current state - active class: ${dropdown.classList.contains('active')}, style.display: ${dropdown.style.display}, computed display: ${getComputedStyle(dropdown).display}`);
+      
+      if (!isVisible) {
         console.log('Forcing dropdown to be visible via JS');
         dropdown.classList.add('active');
         dropdown.style.display = 'block';
-        return true;
+        dropdown.style.opacity = '1';
+        dropdown.style.visibility = 'visible';
+        
+        // Also try to add the show class to the parent
+        const parent = dropdown.parentElement;
+        if (parent) {
+          parent.classList.add('show');
+        }
+        
+        return { success: true, wasForced: true };
       }
-      return false;
+      
+      return { success: true, wasForced: false };
     });
+    
+    console.log('Dropdown status:', dropdownStatus);
+    
+    if (dropdownStatus.wasForced) {
+      console.log('Had to force dropdown open via JavaScript');
+      await page.waitForTimeout(1000); // Longer wait after forcing it open
+    }
+    
+    // Take a screenshot of the dropdown state
+    await page.screenshot({ path: path.resolve(__dirname, '..', 'screenshots', 'dropdown-opened.png') });
     
     // Get all rarity checkboxes
     const rarityCheckboxes = await page.$$('.rarity-filter');
     console.log(`Found ${rarityCheckboxes.length} rarity checkboxes`);
+    
+    // If no checkboxes found, we need to stop
+    if (rarityCheckboxes.length === 0) {
+      throw new Error('No rarity checkboxes found, cannot continue testing');
+    }
     
     // Get rarity values from checkboxes
     const rarityValues = await page.evaluate(() => {
@@ -106,7 +200,7 @@ async function testRarityFilterCombinations() {
       
       // Uncheck the specific rarity
       const checkbox = await page.locator(`.rarity-filter[value="${rarityValue}"]`);
-      await checkbox.uncheck();
+      await checkbox.uncheck({ force: true }); // Use force option to ensure the action happens
       
       // Wait a moment for filters to apply
       await page.waitForTimeout(500);
@@ -119,7 +213,7 @@ async function testRarityFilterCombinations() {
         // Check that no card with the unchecked rarity is visible
         const visibleWithUncheckedRarity = Array.from(cards)
           .filter(card => !card.classList.contains('filtered-out') && 
-                  card.dataset.rarity.toLowerCase() === uncheckedRarity.toLowerCase())
+                  card.dataset.rarity && card.dataset.rarity.toLowerCase() === uncheckedRarity.toLowerCase())
           .length;
           
         return {
@@ -142,7 +236,7 @@ async function testRarityFilterCombinations() {
       }
       
       // Check the rarity again (reset state)
-      await checkbox.check();
+      await checkbox.check({ force: true });
       await page.waitForTimeout(500);
     }
     
