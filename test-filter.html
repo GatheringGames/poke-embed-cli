@@ -172,6 +172,11 @@ body {
   cursor: pointer;
   min-width: 200px;
 }
+
+/* Card hiding for filters */
+.pokemon-set-list-card.filtered-out {
+  display: none !important;
+}
 </style>
 </head>
 <body>
@@ -504,6 +509,27 @@ body {
             });
           }
         });
+
+        // Handle checkbox changes
+        document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+          checkbox.addEventListener('change', function() {
+            const filterType = this.dataset.filterType;
+            const value = this.value;
+            
+            if (this.checked) {
+              filterState[filterType + 's'].add(value);
+            } else {
+              filterState[filterType + 's'].delete(value);
+            }
+            
+            applyFilters();
+            console.log(`Filter changed: ${filterType}=${value}, checked=${this.checked}`);
+            console.log('Current filter state:', {
+              types: Array.from(filterState.types),
+              rarities: Array.from(filterState.rarities)
+            });
+          });
+        });
       }
     }
 
@@ -512,6 +538,39 @@ body {
       console.log("DOM loaded, initializing...");
       createSortControls();
       createFilterControls();
+      
+      // Run a check after everything is loaded to ensure filter event listeners are attached
+      setTimeout(() => {
+        const checkboxes = document.querySelectorAll('.filter-checkbox-item input');
+        console.log(`Found ${checkboxes.length} filter checkboxes`);
+        
+        if (checkboxes.length > 0 && !checkboxes[0].checked) {
+          // Re-attach event listeners if needed
+          checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+              const filterType = this.dataset.filterType;
+              const value = this.value;
+              
+              if (this.checked) {
+                filterState[filterType + 's'].add(value);
+              } else {
+                filterState[filterType + 's'].delete(value);
+              }
+              
+              applyFilters();
+              console.log(`Filter changed: ${filterType}=${value}, checked=${this.checked}`);
+            });
+          });
+        }
+        
+        // Make sure filterState is initialized
+        if (filterState.types.size === 0 && filterState.allTypes.size > 0) {
+          filterState.types = new Set(filterState.allTypes);
+        }
+        if (filterState.rarities.size === 0 && filterState.allRarities.size > 0) {
+          filterState.rarities = new Set(filterState.allRarities);
+        }
+      }, 500);
     });
     </script>
 </body>

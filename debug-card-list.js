@@ -89,7 +89,7 @@ body {
 
 /* Card hiding for filters */
 .pokemon-set-list-card.filtered-out {
-  display: none;
+  display: none !important;
 }
 
 .filter-checkbox-item {
@@ -337,4 +337,68 @@ body {
       }
     }
   }, 1000);
+
+  // Add event listeners to checkboxes
+  document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const filterType = this.dataset.filterType;
+      const value = this.value;
+      
+      if (this.checked) {
+        filterState[filterType + 's'].add(value);
+      } else {
+        filterState[filterType + 's'].delete(value);
+      }
+      
+      applyFilters();
+      console.log(`Filter changed: ${filterType}=${value}, checked=${this.checked}`);
+    });
+  });
+
+  // Apply filters function
+  function applyFilters() {
+    const cards = document.querySelectorAll('.pokemon-set-list-card');
+    
+    cards.forEach(card => {
+      let showCard = true;
+      
+      // Get the card's types
+      const cardTypes = card.dataset.types ? card.dataset.types.split(', ') : [];
+      const cardSupertype = card.dataset.supertype;
+      const cardRarity = card.dataset.rarity;
+      
+      // Check type filter
+      let typeMatch = false;
+      
+      if (cardSupertype === 'Trainer' && filterState.types.has('Trainer')) {
+        typeMatch = true;
+      } else if (cardSupertype === 'Energy') {
+        if (card.dataset.subtype === 'Special' && filterState.types.has('Special Energy')) {
+          typeMatch = true;
+        } else if (cardTypes.some(type => filterState.types.has(type))) {
+          typeMatch = true;
+        }
+      } else if (cardTypes.some(type => filterState.types.has(type))) {
+        typeMatch = true;
+      }
+      
+      // If no type match, don't show the card
+      if (!typeMatch) showCard = false;
+      
+      // Check rarity filter - Only apply if type filter passed
+      if (showCard && cardRarity && !filterState.rarities.has(cardRarity)) {
+        showCard = false;
+      }
+      
+      // Show or hide the card
+      card.classList.toggle('filtered-out', !showCard);
+    });
+    
+    console.log('Filter state:', {
+      typesSelected: Array.from(filterState.types),
+      raritiesSelected: Array.from(filterState.rarities),
+      allTypes: Array.from(filterState.allTypes),
+      allRarities: Array.from(filterState.allRarities)
+    });
+  }
 })(); 
