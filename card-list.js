@@ -1209,6 +1209,13 @@ document.addEventListener("DOMContentLoaded", function() {
       
       console.log("Available rarities found on page:", Array.from(availableRarities));
       
+      // Force include "Ultra Rare" in rarities dropdown
+      if (Array.from(availableRarities).some(r => r.toLowerCase() === "ultra rare".toLowerCase())) {
+        console.log("Ultra Rare rarity found on page");
+      } else {
+        console.log("No Ultra Rare cards found, but adding filter option anyway");
+      }
+      
       // Create minimal filter controls directly
       const filterControls = document.createElement('div');
       filterControls.className = 'pokemon-set-filter-controls';
@@ -1362,6 +1369,17 @@ document.addEventListener("DOMContentLoaded", function() {
         rarities: Array.from(filterState.rarities)
       });
       
+      // Ensure Ultra Rare is added to the filter state
+      const ultraRareExists = Array.from(filterState.rarities).some(
+        r => r.toLowerCase() === 'ultra rare'.toLowerCase()
+      );
+      
+      if (!ultraRareExists) {
+        console.log("Explicitly adding Ultra Rare to filter state");
+        filterState.rarities.add('Ultra Rare');
+        filterState.allRarities.add('Ultra Rare');
+      }
+      
       // Toggle dropdowns
       document.getElementById('typeFilterButton').addEventListener('click', function(e) {
         e.stopPropagation();
@@ -1390,20 +1408,48 @@ document.addEventListener("DOMContentLoaded", function() {
           const filterType = this.dataset.filterType;
           const value = this.value;
           
-          if (this.checked) {
-            filterState[filterType + 's'].add(value);
-          } else {
-            // For rarity filter, need to handle case-insensitivity
-            if (filterType === 'rarity') {
-              // Remove from set (case-insensitive)
-              const valueToRemove = Array.from(filterState.rarities).find(
-                r => r.toLowerCase() === value.toLowerCase()
-              );
-              if (valueToRemove) {
-                filterState.rarities.delete(valueToRemove);
-              }
+          console.log(`Checkbox changed: ${value} (${filterType}) - checked: ${this.checked}`);
+          
+          // Special case for Ultra Rare
+          if (value === 'Ultra Rare') {
+            console.log('Ultra Rare checkbox clicked - checked:', this.checked);
+            
+            if (this.checked) {
+              // Direct check if it already exists to avoid duplicates
+              let exists = false;
+              filterState.rarities.forEach(r => {
+                if (r.toLowerCase() === value.toLowerCase()) exists = true;
+              });
+              
+              if (!exists) filterState.rarities.add(value);
             } else {
-              filterState[filterType + 's'].delete(value);
+              // Need to find and remove case-insensitively
+              filterState.rarities.forEach(r => {
+                if (r.toLowerCase() === value.toLowerCase()) {
+                  console.log('Removing Ultra Rare from filter state:', r);
+                  filterState.rarities.delete(r);
+                }
+              });
+            }
+            
+            console.log('Filter rarities after Ultra Rare change:', Array.from(filterState.rarities));
+          } else {
+            // Handle normal checkbox changes
+            if (this.checked) {
+              filterState[filterType + 's'].add(value);
+            } else {
+              // For rarity filter, need to handle case-insensitivity
+              if (filterType === 'rarity') {
+                // Remove from set (case-insensitive)
+                const valueToRemove = Array.from(filterState.rarities).find(
+                  r => r.toLowerCase() === value.toLowerCase()
+                );
+                if (valueToRemove) {
+                  filterState.rarities.delete(valueToRemove);
+                }
+              } else {
+                filterState[filterType + 's'].delete(value);
+              }
             }
           }
           
@@ -1459,6 +1505,29 @@ document.addEventListener("DOMContentLoaded", function() {
     function applyFilters() {
       const cards = document.querySelectorAll('.pokemon-set-list-card');
       
+      // Debug Ultra Rare cards specifically
+      const ultraRareCards = Array.from(cards).filter(card => 
+        card.dataset.rarity && card.dataset.rarity.toLowerCase() === 'ultra rare'.toLowerCase()
+      );
+      console.log('Ultra Rare cards found:', ultraRareCards.length);
+      console.log('Ultra Rare in filter state:', 
+        Array.from(filterState.rarities).some(r => r.toLowerCase() === 'ultra rare'.toLowerCase())
+      );
+      
+      // Add character-by-character comparison for debugging
+      if (ultraRareCards.length > 0) {
+        const firstUltraRare = ultraRareCards[0];
+        const cardRarity = firstUltraRare.dataset.rarity;
+        console.log('Ultra Rare comparison:');
+        console.log('Card rarity:', JSON.stringify(cardRarity));
+        console.log('Expected:', JSON.stringify('Ultra Rare'));
+        console.log('Length comparison:', cardRarity.length, 'Ultra Rare'.length);
+        for (let i = 0; i < Math.max(cardRarity.length, 'Ultra Rare'.length); i++) {
+          console.log(`Char ${i}: ${cardRarity.charCodeAt(i) || 'N/A'} vs ${
+            'Ultra Rare'.charCodeAt(i) || 'N/A'}`);
+        }
+      }
+      
       cards.forEach(card => {
         let showCard = true;
         
@@ -1466,6 +1535,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const cardTypes = card.dataset.types ? card.dataset.types.split(', ') : [];
         const cardSupertype = card.dataset.supertype;
         const cardRarity = card.dataset.rarity;
+        
+        // Debug message for Ultra Rare cards
+        if (cardRarity && cardRarity.toLowerCase() === 'ultra rare'.toLowerCase()) {
+          console.log('Processing Ultra Rare card:', card.dataset.name);
+        }
         
         // Check type filter
         let typeMatch = false;
@@ -1491,6 +1565,13 @@ document.addEventListener("DOMContentLoaded", function() {
           const rarityExists = Array.from(filterState.rarities).some(
             r => r.toLowerCase() === cardRarity.toLowerCase()
           );
+          
+          // Extra debug for Ultra Rare cards
+          if (cardRarity && cardRarity.toLowerCase() === 'ultra rare'.toLowerCase()) {
+            console.log('Ultra Rare card rarity check:', rarityExists);
+            console.log('Current rarities in filter:', Array.from(filterState.rarities));
+          }
+          
           if (!rarityExists) {
             showCard = false;
           }
