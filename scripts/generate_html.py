@@ -34,19 +34,6 @@ output_path = Path(os.path.join(project_root, "src", "journey_together_embed.htm
 # Start HTML with a container for the whole experience
 html = '<div class="pokemon-set-container">'
 
-# Add a style tag to ensure filter dropdowns display correctly
-html += '''
-<style>
-  /* Fix for filter dropdown visibility */
-  .filter-dropdown.show .filter-dropdown-content {
-    display: block !important;
-  }
-  .filter-dropdown-content.active {
-    display: block !important;
-  }
-</style>
-'''
-
 # This div is where filter controls will be inserted by JavaScript
 html += '<div class="pokemon-set-filter-placeholder"></div>'
 

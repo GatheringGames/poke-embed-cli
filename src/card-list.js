@@ -396,6 +396,11 @@ canvas.poke-price-chart {
   display: block !important;
 }
 
+/* Fix for filter dropdown visibility when active class is applied */
+.filter-dropdown-content.active {
+  display: block !important;
+}
+
 .filter-checkbox-item {
   display: flex;
   align-items: center;
