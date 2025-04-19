@@ -17,7 +17,7 @@ body {
   background: white;
   padding: 10px;
   border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   transition: transform 0.2s ease;
   cursor: pointer;
 }
@@ -70,9 +70,9 @@ body {
 }
 
 .filter-type-icon {
-  height: 16px;
-  width: 16px;
-  margin-right: 5px;
+  height: 14px;
+  width: auto;
+  margin-right: 4px;
   vertical-align: middle;
 }
 
@@ -206,7 +206,7 @@ body {
           return `
             <label class="filter-checkbox-item">
               <input type="checkbox" value="${type}" data-filter-type="type" checked>
-              ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
+              ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon" style="height:14px; width:auto; vertical-align:middle; margin-right:4px;">` : ''}
               ${type}
             </label>
           `;

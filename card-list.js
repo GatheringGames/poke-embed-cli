@@ -149,8 +149,8 @@ body {
   justify-content: center;
 }
 .energy-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   vertical-align: middle;
   display: inline-block;
   margin-right: 2px;
@@ -557,7 +557,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const symbol = match.replace(/\{|\}/g, '');
         const url = ENERGY_ICON_URLS[symbol];
         return url
-          ? `<img src="${url}" alt="${symbol}" class="energy-icon">`
+          ? `<img src="${url}" alt="${symbol}" class="energy-icon" style="width:14px; height:14px; vertical-align:middle; display:inline-block; margin-right:2px;">`
           : match;
       }).join('');
     }
