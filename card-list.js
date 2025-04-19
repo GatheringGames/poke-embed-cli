@@ -1155,373 +1155,207 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Function to create filter controls
     function createFilterControls() {
-      // Try to get the filter placeholder first
+      console.log("Creating filter controls...");
+      
+      // Find the grid container
+      const gridContainer = document.querySelector('.pokemon-set-list-grid');
+      if (!gridContainer) {
+        console.error("Grid container not found, can't add filter controls");
+        return;
+      }
+      
+      // Collect all types and rarities that exist in the data
+      const allTypes = new Set();
+      const allRarities = new Set();
+      
+      // Process all cards to get unique types and rarities
+      document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
+        // Get rarity
+        const rarity = card.dataset.rarity;
+        if (rarity) allRarities.add(rarity);
+        
+        // Get types for Pokemon cards
+        const types = card.dataset.types ? card.dataset.types.split(', ') : [];
+        types.forEach(type => {
+          if (type) allTypes.add(type);
+        });
+        
+        // Add supertype for non-Pokemon cards
+        const supertype = card.dataset.supertype;
+        if (supertype === 'Trainer') {
+          allTypes.add('Trainer');
+        } else if (supertype === 'Energy') {
+          if (card.dataset.subtype === 'Special') {
+            allTypes.add('Special Energy');
+          } else {
+            // Regular energy uses its type
+            types.forEach(type => {
+              if (type) allTypes.add(type);
+            });
+          }
+        }
+      });
+      
+      console.log("All types collected:", Array.from(allTypes));
+      console.log("All rarities collected:", Array.from(allRarities));
+      
+      // Initialize filterState with all types and rarities
+      filterState.allTypes = new Set(allTypes);
+      filterState.allRarities = new Set(allRarities);
+      
+      // By default, all options are selected
+      filterState.types = new Set(allTypes);
+      filterState.rarities = new Set(allRarities);
+      
+      // Create filter controls container
+      const filterControls = document.createElement('div');
+      filterControls.className = 'pokemon-set-filter-controls';
+      
+      // Create type filter dropdown
+      const typeDropdown = document.createElement('div');
+      typeDropdown.className = 'filter-dropdown';
+      typeDropdown.innerHTML = `
+        <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
+        <div class="filter-dropdown-content" id="typeFilterContent">
+          ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => {
+            // Only include types that exist in our data
+            if (!allTypes.has(type)) return '';
+            
+            return `
+              <label class="filter-checkbox-item">
+                <input type="checkbox" value="${type}" data-filter-type="type" checked>
+                ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
+                ${type}
+              </label>
+            `;
+          }).filter(html => html !== '').join('')}
+        </div>
+      `;
+      
+      // Create rarity filter dropdown
+      const rarityDropdown = document.createElement('div');
+      rarityDropdown.className = 'filter-dropdown';
+      rarityDropdown.innerHTML = `
+        <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
+        <div class="filter-dropdown-content" id="rarityFilterContent">
+          ${Array.from(allRarities)
+            // Sort by the predefined rarity order
+            .sort((a, b) => {
+              const orderA = RARITY_ORDER[a] || 999; // Default high value for unknown rarities
+              const orderB = RARITY_ORDER[b] || 999;
+              return orderA - orderB;
+            })
+            .map(rarity => {
+              const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
+              return `
+                <label class="filter-checkbox-item">
+                  <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
+                  <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
+                  ${rarity}
+                </label>
+              `;
+            }).join('')}
+        </div>
+      `;
+      
+      // Create clear all filters button
+      const clearFiltersButton = document.createElement('button');
+      clearFiltersButton.className = 'filter-clear-all';
+      clearFiltersButton.textContent = 'Reset Filters';
+      clearFiltersButton.style.display = 'none'; // Hide initially
+      
+      // Add elements to the filter controls
+      filterControls.appendChild(typeDropdown);
+      filterControls.appendChild(rarityDropdown);
+      filterControls.appendChild(clearFiltersButton);
+      
+      // Try to find the filter placeholder first
       const filterPlaceholder = document.querySelector('.pokemon-set-filter-placeholder');
       
-      // If placeholder exists, place filters there
       if (filterPlaceholder) {
-        // Collect all types and rarities that exist in the data
-        const allTypes = new Set();
-        const allRarities = new Set();
-        
-        // Process all cards to get unique types and rarities
-        document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
-          // Get rarity
-          const rarity = card.dataset.rarity;
-          if (rarity) allRarities.add(rarity);
-          
-          // Get types for Pokemon cards
-          const types = card.dataset.types ? card.dataset.types.split(', ') : [];
-          types.forEach(type => {
-            if (type) allTypes.add(type);
-          });
-          
-          // Add supertype for non-Pokemon cards
-          const supertype = card.dataset.supertype;
-          if (supertype === 'Trainer') {
-            allTypes.add('Trainer');
-          } else if (supertype === 'Energy') {
-            if (card.dataset.subtype === 'Special') {
-              allTypes.add('Special Energy');
-            } else {
-              // Regular energy uses its type
-              types.forEach(type => {
-                if (type) allTypes.add(type);
-              });
-            }
-          }
-        });
-        
-        // Initialize filterState with all types and rarities
-        filterState.allTypes = new Set(allTypes);
-        filterState.allRarities = new Set(allRarities);
-        
-        // By default, all options are selected
-        filterState.types = new Set(allTypes);
-        filterState.rarities = new Set(allRarities);
-        
-        // Create filter controls container
-        const filterControls = document.createElement('div');
-        filterControls.className = 'pokemon-set-filter-controls';
-        
-        // Create type filter dropdown
-        const typeDropdown = document.createElement('div');
-        typeDropdown.className = 'filter-dropdown';
-        typeDropdown.innerHTML = `
-          <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
-          <div class="filter-dropdown-content" id="typeFilterContent">
-            ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => {
-              // Only include types that exist in our data
-              if (!allTypes.has(type)) return '';
-              
-              return `
-                <label class="filter-checkbox-item">
-                  <input type="checkbox" value="${type}" data-filter-type="type" checked>
-                  ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
-                  ${type}
-                </label>
-              `;
-            }).filter(html => html !== '').join('')}
-          </div>
-        `;
-        
-        // Create rarity filter dropdown
-        const rarityDropdown = document.createElement('div');
-        rarityDropdown.className = 'filter-dropdown';
-        rarityDropdown.innerHTML = `
-          <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
-          <div class="filter-dropdown-content" id="rarityFilterContent">
-            ${Array.from(allRarities)
-              // Sort by the predefined rarity order
-              .sort((a, b) => {
-                const orderA = RARITY_ORDER[a] || 999; // Default high value for unknown rarities
-                const orderB = RARITY_ORDER[b] || 999;
-                return orderA - orderB;
-              })
-              .map(rarity => {
-                const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
-                return `
-                  <label class="filter-checkbox-item">
-                    <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
-                    <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
-                    ${rarity}
-                  </label>
-                `;
-              }).join('')}
-          </div>
-        `;
-        
-        // Create clear all filters button
-        const clearFiltersButton = document.createElement('button');
-        clearFiltersButton.className = 'filter-clear-all';
-        clearFiltersButton.textContent = 'Reset Filters';
-        clearFiltersButton.style.display = 'none'; // Hide initially
-        
-        // Add elements to the filter controls
-        filterControls.appendChild(typeDropdown);
-        filterControls.appendChild(rarityDropdown);
-        filterControls.appendChild(clearFiltersButton);
-        
         // Replace the placeholder with our filter controls
+        console.log("Using filter placeholder path");
         filterPlaceholder.replaceWith(filterControls);
-        
-        // Toggle dropdowns
-        document.getElementById('typeFilterButton').addEventListener('click', function(e) {
-          e.stopPropagation();
-          document.getElementById('rarityFilterContent').parentElement.classList.remove('show');
-          this.parentElement.classList.toggle('show');
-        });
-        
-        document.getElementById('rarityFilterButton').addEventListener('click', function(e) {
-          e.stopPropagation();
-          document.getElementById('typeFilterContent').parentElement.classList.remove('show');
-          this.parentElement.classList.toggle('show');
-        });
-        
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(e) {
-          if (!e.target.closest('.filter-dropdown')) {
-            document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
-              dropdown.classList.remove('show');
-            });
-          }
-        });
-        
-        // Handle checkbox changes
-        document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
-          checkbox.addEventListener('change', function() {
-            const filterType = this.dataset.filterType;
-            const value = this.value;
-            
-            if (this.checked) {
-              filterState[filterType + 's'].add(value);
-            } else {
-              filterState[filterType + 's'].delete(value);
-            }
-            
-            applyFilters();
-            updateFilterButtons();
-          });
-        });
-        
-        // Reset all filters
-        clearFiltersButton.addEventListener('click', function() {
-          // Reset to all filters selected
-          filterState.types = new Set(filterState.allTypes);
-          filterState.rarities = new Set(filterState.allRarities);
-          
-          // Check all checkboxes
-          document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
-            checkbox.checked = true;
-          });
-          
-          applyFilters();
-          updateFilterButtons();
-        });
-        
-        // Function to update filter button labels
-        function updateFilterButtons() {
-          const typeButton = document.getElementById('typeFilterButton');
-          const rarityButton = document.getElementById('rarityFilterButton');
-          
-          // Count deselected items instead of selected ones
-          const typeCount = filterState.allTypes.size - filterState.types.size;
-          const rarityCount = filterState.allRarities.size - filterState.rarities.size;
-          
-          typeButton.textContent = typeCount > 0 ? `Card Type (${typeCount} hidden)` : 'Card Type';
-          rarityButton.textContent = rarityCount > 0 ? `Rarity (${rarityCount} hidden)` : 'Rarity';
-          
-          typeButton.classList.toggle('filter-applied', typeCount > 0);
-          rarityButton.classList.toggle('filter-applied', rarityCount > 0);
-          
-          clearFiltersButton.style.display = 
-            (filterState.types.size < filterState.allTypes.size || 
-            filterState.rarities.size < filterState.allRarities.size) ? 'block' : 'none';
-        }
-      } 
-      else {
-        // Fallback to the original method if placeholder doesn't exist
-        const gridContainer = document.querySelector('.pokemon-set-list-grid');
-        if (!gridContainer) return;
-        
-        // Collect all types and rarities that exist in the data
-        const gridAllTypes = new Set();
-        const gridAllRarities = new Set();
-        
-        // Process all cards to get unique types and rarities
-        document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
-          // Get rarity
-          const rarity = card.dataset.rarity;
-          if (rarity) gridAllRarities.add(rarity);
-          
-          // Get types for Pokemon cards
-          const types = card.dataset.types ? card.dataset.types.split(', ') : [];
-          types.forEach(type => {
-            if (type) gridAllTypes.add(type);
-          });
-          
-          // Add supertype for non-Pokemon cards
-          const supertype = card.dataset.supertype;
-          if (supertype === 'Trainer') {
-            gridAllTypes.add('Trainer');
-          } else if (supertype === 'Energy') {
-            if (card.dataset.subtype === 'Special') {
-              gridAllTypes.add('Special Energy');
-            } else {
-              // Regular energy uses its type
-              types.forEach(type => {
-                if (type) gridAllTypes.add(type);
-              });
-            }
-          }
-        });
-        
-        // Initialize filterState with all types and rarities
-        filterState.allTypes = new Set(gridAllTypes);
-        filterState.allRarities = new Set(gridAllRarities);
-        
-        // By default, all options are selected
-        filterState.types = new Set(gridAllTypes);
-        filterState.rarities = new Set(gridAllRarities);
-        
-        // Create filter controls container
-        const filterControls = document.createElement('div');
-        filterControls.className = 'pokemon-set-filter-controls';
-      
-        // Create type filter dropdown
-        const typeDropdown = document.createElement('div');
-        typeDropdown.className = 'filter-dropdown';
-        typeDropdown.innerHTML = `
-          <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
-          <div class="filter-dropdown-content" id="typeFilterContent">
-            ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => {
-              // Only include types that exist in our data
-              if (!gridAllTypes.has(type)) return '';
-              
-              return `
-                <label class="filter-checkbox-item">
-                  <input type="checkbox" value="${type}" data-filter-type="type" checked>
-                  ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
-                  ${type}
-                </label>
-              `;
-            }).filter(html => html !== '').join('')}
-          </div>
-        `;
-      
-        // Create rarity filter dropdown
-        const rarityDropdown = document.createElement('div');
-        rarityDropdown.className = 'filter-dropdown';
-        rarityDropdown.innerHTML = `
-          <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
-          <div class="filter-dropdown-content" id="rarityFilterContent">
-            ${Array.from(gridAllRarities)
-              // Sort by the predefined rarity order
-              .sort((a, b) => {
-                const orderA = RARITY_ORDER[a] || 999; // Default high value for unknown rarities
-                const orderB = RARITY_ORDER[b] || 999;
-                return orderA - orderB;
-              })
-              .map(rarity => {
-                const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
-                return `
-                  <label class="filter-checkbox-item">
-                    <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
-                    <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
-                    ${rarity}
-                  </label>
-                `;
-              }).join('')}
-          </div>
-        `;
-      
-        // Create clear all filters button
-        const clearFiltersButton = document.createElement('button');
-        clearFiltersButton.className = 'filter-clear-all';
-        clearFiltersButton.textContent = 'Reset Filters';
-        clearFiltersButton.style.display = 'none'; // Hide initially
-        
-        // Add elements to the filter controls
-        filterControls.appendChild(typeDropdown);
-        filterControls.appendChild(rarityDropdown);
-        filterControls.appendChild(clearFiltersButton);
-        
-        // Insert the filter controls before the grid
+      } else {
+        // Insert before the grid as fallback
+        console.log("Using fallback path - inserting before grid");
         gridContainer.parentNode.insertBefore(filterControls, gridContainer);
-        
-        // Toggle dropdowns
-        document.getElementById('typeFilterButton').addEventListener('click', function(e) {
-          e.stopPropagation();
-          document.getElementById('rarityFilterContent').parentElement.classList.remove('show');
-          this.parentElement.classList.toggle('show');
-        });
-        
-        document.getElementById('rarityFilterButton').addEventListener('click', function(e) {
-          e.stopPropagation();
-          document.getElementById('typeFilterContent').parentElement.classList.remove('show');
-          this.parentElement.classList.toggle('show');
-        });
-        
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(e) {
-          if (!e.target.closest('.filter-dropdown')) {
-            document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
-              dropdown.classList.remove('show');
-            });
-          }
-        });
-        
-        // Handle checkbox changes
-        document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
-          checkbox.addEventListener('change', function() {
-            const filterType = this.dataset.filterType;
-            const value = this.value;
-            
-            if (this.checked) {
-              filterState[filterType + 's'].add(value);
-            } else {
-              filterState[filterType + 's'].delete(value);
-            }
-            
-            applyFilters();
-            updateFilterButtons();
+      }
+      
+      console.log("Filter controls HTML created and inserted into DOM");
+      
+      // Toggle dropdowns
+      document.getElementById('typeFilterButton').addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('rarityFilterContent').parentElement.classList.remove('show');
+        this.parentElement.classList.toggle('show');
+      });
+      
+      document.getElementById('rarityFilterButton').addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('typeFilterContent').parentElement.classList.remove('show');
+        this.parentElement.classList.toggle('show');
+      });
+      
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.filter-dropdown')) {
+          document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+            dropdown.classList.remove('show');
           });
-        });
-        
-        // Reset all filters
-        clearFiltersButton.addEventListener('click', function() {
-          // Reset to all filters selected
-          filterState.types = new Set(filterState.allTypes);
-          filterState.rarities = new Set(filterState.allRarities);
+        }
+      });
+      
+      // Handle checkbox changes
+      document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const filterType = this.dataset.filterType;
+          const value = this.value;
           
-          // Check all checkboxes
-          document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
-            checkbox.checked = true;
-          });
+          if (this.checked) {
+            filterState[filterType + 's'].add(value);
+          } else {
+            filterState[filterType + 's'].delete(value);
+          }
           
           applyFilters();
           updateFilterButtons();
         });
+      });
+      
+      // Reset all filters
+      clearFiltersButton.addEventListener('click', function() {
+        // Reset to all filters selected
+        filterState.types = new Set(filterState.allTypes);
+        filterState.rarities = new Set(filterState.allRarities);
         
-        // Function to update filter button labels
-        function updateFilterButtons() {
-          const typeButton = document.getElementById('typeFilterButton');
-          const rarityButton = document.getElementById('rarityFilterButton');
-          
-          // Count deselected items instead of selected ones
-          const typeCount = filterState.allTypes.size - filterState.types.size;
-          const rarityCount = filterState.allRarities.size - filterState.rarities.size;
-          
-          typeButton.textContent = typeCount > 0 ? `Card Type (${typeCount} hidden)` : 'Card Type';
-          rarityButton.textContent = rarityCount > 0 ? `Rarity (${rarityCount} hidden)` : 'Rarity';
-          
-          typeButton.classList.toggle('filter-applied', typeCount > 0);
-          rarityButton.classList.toggle('filter-applied', rarityCount > 0);
-          
-          clearFiltersButton.style.display = 
-            (filterState.types.size < filterState.allTypes.size || 
-            filterState.rarities.size < filterState.allRarities.size) ? 'block' : 'none';
-        }
+        // Check all checkboxes
+        document.querySelectorAll('.filter-checkbox-item input').forEach(checkbox => {
+          checkbox.checked = true;
+        });
+        
+        applyFilters();
+        updateFilterButtons();
+      });
+      
+      // Function to update filter button labels
+      function updateFilterButtons() {
+        const typeButton = document.getElementById('typeFilterButton');
+        const rarityButton = document.getElementById('rarityFilterButton');
+        
+        // Count deselected items instead of selected ones
+        const typeCount = filterState.allTypes.size - filterState.types.size;
+        const rarityCount = filterState.allRarities.size - filterState.rarities.size;
+        
+        typeButton.textContent = typeCount > 0 ? `Card Type (${typeCount} hidden)` : 'Card Type';
+        rarityButton.textContent = rarityCount > 0 ? `Rarity (${rarityCount} hidden)` : 'Rarity';
+        
+        typeButton.classList.toggle('filter-applied', typeCount > 0);
+        rarityButton.classList.toggle('filter-applied', rarityCount > 0);
+        
+        clearFiltersButton.style.display = 
+          (filterState.types.size < filterState.allTypes.size || 
+          filterState.rarities.size < filterState.allRarities.size) ? 'block' : 'none';
       }
     }
     
@@ -1572,6 +1406,9 @@ document.addEventListener("DOMContentLoaded", function() {
         allRarities: Array.from(filterState.allRarities)
       });
     }
+
+    console.log("End of initialization - filter controls should be created by now");
+    console.log("Filter controls present:", !!document.querySelector('.pokemon-set-filter-controls'));
   })();
 });
 

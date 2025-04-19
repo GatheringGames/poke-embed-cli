@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Filter Test</title>
+    <style>
+    /* Base styles for page */
+body {
+  background: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+
+/* Card grid layout */
+.pokemon-set-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+  width: 90vw;
+  margin-left: calc(-45vw + 50%);
+  margin-right: calc(-45vw + 50%);
+}
+
+.pokemon-set-list-card {
+  text-align: center;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.pokemon-set-list-card:hover {
+  transform: scale(1.05);
+}
+
+.pokemon-set-list-card img {
+  width: 100%;
+  height: auto;
+}
+
+.pokemon-set-list-card p {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+/* Filter controls styles */
+.pokemon-set-filter-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.filter-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-dropdown-button {
+  padding: 8px 12px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 150px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-dropdown-button:after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #444;
+  margin-left: 8px;
+}
+
+.filter-dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 250px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  padding: 10px;
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  left: 0;
+  top: 100%;
+}
+
+.filter-dropdown.show .filter-dropdown-content {
+  display: block;
+}
+
+.filter-checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.filter-checkbox-item:hover {
+  background-color: #f5f5f5;
+}
+
+.filter-checkbox-item input {
+  margin-right: 8px;
+}
+
+.filter-type-icon, .filter-rarity-icon {
+  height: 14px;
+  width: auto;
+  margin-right: 6px;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+/* Sort controls styles */
+.pokemon-set-sort-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pokemon-set-sort-controls label {
+  font-size: 14px;
+  color: #444;
+  margin-right: 8px;
+}
+
+.pokemon-set-sort-controls select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  min-width: 200px;
+}
+</style>
+</head>
+<body>
+    <h1>Pokemon TCG Filter Test</h1>
+    
+    <div class="pokemon-set-container">
+        <div class="pokemon-set-filter-placeholder"></div>
+        
+        <div class="pokemon-set-list-grid">
+            <!-- Sample cards -->
+            <div class="pokemon-set-list-card"
+                data-id="sv9-1"
+                data-name="Caterpie"
+                data-number="001"
+                data-set="sv9"
+                data-image="https://images.pokemontcg.io/sv9/1.png"
+                data-rarity="Common"
+                data-text=""
+                data-hp="50"
+                data-types="Grass"
+                data-ability-name=""
+                data-ability-text=""
+                data-attacks="[]"
+                data-supertype="Pokémon"
+                data-subtype="Basic">
+                <img src="https://images.pokemontcg.io/sv9/1.png" alt="Caterpie (001)" loading="lazy">
+                <p>Caterpie<br>
+                    <small>001/159</small><br>
+                    <small class="card-price">$0.10</small>
+                </p>
+            </div>
+            
+            <div class="pokemon-set-list-card"
+                data-id="sv9-10"
+                data-name="Charizard"
+                data-number="010"
+                data-set="sv9"
+                data-image="https://images.pokemontcg.io/sv9/10.png"
+                data-rarity="Rare"
+                data-text=""
+                data-hp="190"
+                data-types="Fire"
+                data-ability-name=""
+                data-ability-text=""
+                data-attacks="[]"
+                data-supertype="Pokémon"
+                data-subtype="Stage 2">
+                <img src="https://images.pokemontcg.io/sv9/10.png" alt="Charizard (010)" loading="lazy">
+                <p>Charizard<br>
+                    <small>010/159</small><br>
+                    <small class="card-price">$10.25</small>
+                </p>
+            </div>
+            
+            <div class="pokemon-set-list-card"
+                data-id="sv9-27"
+                data-name="Dusknoir"
+                data-number="027"
+                data-set="sv9"
+                data-image="https://images.pokemontcg.io/sv9/27.png"
+                data-rarity="Ultra Rare"
+                data-text=""
+                data-hp="150"
+                data-types="Psychic"
+                data-ability-name=""
+                data-ability-text=""
+                data-attacks="[]"
+                data-supertype="Pokémon"
+                data-subtype="Stage 2">
+                <img src="https://images.pokemontcg.io/sv9/27.png" alt="Dusknoir (027)" loading="lazy">
+                <p>Dusknoir<br>
+                    <small>027/159</small><br>
+                    <small class="card-price">$2.75</small>
+                </p>
+            </div>
+        </div>
+        
+        <div class="poke-embed-modal" id="pokeEmbedModal"></div>
+    </div>
+
+    <script>
+    // Initialize variables needed by the debug script
+    const filterState = {
+      types: new Set(),
+      rarities: new Set(),
+      allTypes: new Set(),
+      allRarities: new Set()
+    };
+    
+    // Define the card TYPE_ICONS similar to the main script
+    const TYPE_ICONS = {
+      "Grass": "https://js.gatheringgames.co.uk/symbols/grass.svg",
+      "Fire": "https://js.gatheringgames.co.uk/symbols/fire.svg",
+      "Water": "https://js.gatheringgames.co.uk/symbols/water.svg",
+      "Lightning": "https://js.gatheringgames.co.uk/symbols/lightning.svg",
+      "Psychic": "https://js.gatheringgames.co.uk/symbols/psychic.svg",
+      "Fighting": "https://js.gatheringgames.co.uk/symbols/fighting.svg",
+      "Darkness": "https://js.gatheringgames.co.uk/symbols/darkness.svg",
+      "Metal": "https://js.gatheringgames.co.uk/symbols/metal.svg",
+      "Dragon": "https://js.gatheringgames.co.uk/symbols/dragon.svg",
+      "Colorless": "https://js.gatheringgames.co.uk/symbols/colorless.svg",
+      "Trainer": "", // No specific icon for Trainer
+      "Special Energy": "https://js.gatheringgames.co.uk/symbols/colorless.svg" // Using colorless for special energy
+    };
+    
+    // Define the rarity order for sorting
+    const RARITY_ORDER = {
+      'Common': 1,
+      'Uncommon': 2,
+      'Rare': 3,
+      'Double Rare': 4,
+      'Illustration Rare': 5,
+      'Ultra Rare': 6,
+      'Special Illustration Rare': 7,
+      'Hyper Rare': 8
+    };
+    
+    // Apply filters function
+    function applyFilters() {
+      const cards = document.querySelectorAll('.pokemon-set-list-card');
+      
+      cards.forEach(card => {
+        let showCard = true;
+        
+        // Get the card's types
+        const cardTypes = card.dataset.types ? card.dataset.types.split(', ') : [];
+        const cardSupertype = card.dataset.supertype;
+        const cardRarity = card.dataset.rarity;
+        
+        // Check type filter
+        let typeMatch = false;
+        
+        if (cardSupertype === 'Trainer' && filterState.types.has('Trainer')) {
+          typeMatch = true;
+        } else if (cardSupertype === 'Energy') {
+          if (card.dataset.subtype === 'Special' && filterState.types.has('Special Energy')) {
+            typeMatch = true;
+          } else if (cardTypes.some(type => filterState.types.has(type))) {
+            typeMatch = true;
+          }
+        } else if (cardTypes.some(type => filterState.types.has(type))) {
+          typeMatch = true;
+        }
+        
+        // If no type match, don't show the card
+        if (!typeMatch) showCard = false;
+        
+        // Check rarity filter - Only apply if type filter passed
+        if (showCard && cardRarity && !filterState.rarities.has(cardRarity)) {
+          showCard = false;
+        }
+        
+        // Show or hide the card
+        card.classList.toggle('filtered-out', !showCard);
+      });
+      
+      console.log('Filter state:', {
+        typesSelected: Array.from(filterState.types),
+        raritiesSelected: Array.from(filterState.rarities),
+        allTypes: Array.from(filterState.allTypes),
+        allRarities: Array.from(filterState.allRarities)
+      });
+    }
+
+    // Create sort controls - to check the sort dropdown is working
+    function createSortControls() {
+      const gridContainer = document.querySelector('.pokemon-set-list-grid');
+      if (!gridContainer) return;
+      
+      // Create sort controls container
+      const sortControls = document.createElement('div');
+      sortControls.className = 'pokemon-set-sort-controls';
+      sortControls.innerHTML = `
+        <label for="sortOption">Sort by</label>
+        <select id="sortOption">
+          <option value="number_asc">Card number (asc)</option>
+          <option value="number_desc">Card number (desc)</option>
+          <option value="name_asc">Card name (A-Z)</option>
+          <option value="name_desc">Card name (Z-A)</option>
+          <option value="rarity_desc">Rarity (desc)</option>
+          <option value="rarity_asc">Rarity (asc)</option>
+          <option value="price_desc">Market price (desc)</option>
+          <option value="price_asc">Market price (asc)</option>
+        </select>
+      `;
+      
+      // Insert controls before the grid
+      gridContainer.parentNode.insertBefore(sortControls, gridContainer);
+      
+      // Add event listener to the sort select
+      document.getElementById('sortOption').addEventListener('change', (e) => {
+        console.log('Sort option changed to:', e.target.value);
+      });
+    }
+
+    // Function to create filter controls
+    function createFilterControls() {
+      console.log("Creating filter controls...");
+      
+      // Try to get the filter placeholder first
+      const filterPlaceholder = document.querySelector('.pokemon-set-filter-placeholder');
+      console.log("Filter placeholder found:", !!filterPlaceholder);
+      
+      // If placeholder exists, place filters there
+      if (filterPlaceholder) {
+        // Collect all types and rarities that exist in the data
+        const allTypes = new Set();
+        const allRarities = new Set();
+        
+        // Process all cards to get unique types and rarities
+        document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
+          // Get rarity
+          const rarity = card.dataset.rarity;
+          if (rarity) allRarities.add(rarity);
+          
+          // Get types for Pokemon cards
+          const types = card.dataset.types ? card.dataset.types.split(', ') : [];
+          types.forEach(type => {
+            if (type) allTypes.add(type);
+          });
+          
+          // Add supertype for non-Pokemon cards
+          const supertype = card.dataset.supertype;
+          if (supertype === 'Trainer') {
+            allTypes.add('Trainer');
+          } else if (supertype === 'Energy') {
+            if (card.dataset.subtype === 'Special') {
+              allTypes.add('Special Energy');
+            } else {
+              // Regular energy uses its type
+              types.forEach(type => {
+                if (type) allTypes.add(type);
+              });
+            }
+          }
+        });
+        
+        console.log("All types collected:", Array.from(allTypes));
+        console.log("All rarities collected:", Array.from(allRarities));
+        
+        // Initialize filterState with all types and rarities
+        filterState.allTypes = new Set(allTypes);
+        filterState.allRarities = new Set(allRarities);
+        
+        // By default, all options are selected
+        filterState.types = new Set(allTypes);
+        filterState.rarities = new Set(allRarities);
+        
+        // Create filter controls container
+        const filterControls = document.createElement('div');
+        filterControls.className = 'pokemon-set-filter-controls';
+        
+        // Create type filter dropdown
+        const typeDropdown = document.createElement('div');
+        typeDropdown.className = 'filter-dropdown';
+        typeDropdown.innerHTML = `
+          <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
+          <div class="filter-dropdown-content" id="typeFilterContent">
+            ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => {
+              // Only include types that exist in our data
+              if (!allTypes.has(type)) return '';
+              
+              return `
+                <label class="filter-checkbox-item">
+                  <input type="checkbox" value="${type}" data-filter-type="type" checked>
+                  ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
+                  ${type}
+                </label>
+              `;
+            }).filter(html => html !== '').join('')}
+          </div>
+        `;
+        
+        // Create rarity filter dropdown
+        const rarityDropdown = document.createElement('div');
+        rarityDropdown.className = 'filter-dropdown';
+        rarityDropdown.innerHTML = `
+          <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
+          <div class="filter-dropdown-content" id="rarityFilterContent">
+            ${Array.from(allRarities)
+              // Sort by the predefined rarity order
+              .sort((a, b) => {
+                const orderA = RARITY_ORDER[a] || 999; // Default high value for unknown rarities
+                const orderB = RARITY_ORDER[b] || 999;
+                return orderA - orderB;
+              })
+              .map(rarity => {
+                return `
+                  <label class="filter-checkbox-item">
+                    <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
+                    ${rarity}
+                  </label>
+                `;
+              }).join('')}
+          </div>
+        `;
+        
+        // Add elements to the filter controls
+        filterControls.appendChild(typeDropdown);
+        filterControls.appendChild(rarityDropdown);
+        
+        console.log("Filter controls HTML created:", filterControls.outerHTML);
+        
+        // Replace the placeholder with our filter controls
+        filterPlaceholder.replaceWith(filterControls);
+        console.log("Filter controls inserted into DOM");
+        
+        // Toggle dropdowns
+        document.getElementById('typeFilterButton').addEventListener('click', function(e) {
+          console.log("Type filter button clicked");
+          e.stopPropagation();
+          document.getElementById('rarityFilterContent').parentElement.classList.remove('show');
+          this.parentElement.classList.toggle('show');
+        });
+        
+        document.getElementById('rarityFilterButton').addEventListener('click', function(e) {
+          console.log("Rarity filter button clicked");
+          e.stopPropagation();
+          document.getElementById('typeFilterContent').parentElement.classList.remove('show');
+          this.parentElement.classList.toggle('show');
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.filter-dropdown')) {
+            document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+              dropdown.classList.remove('show');
+            });
+          }
+        });
+      }
+    }
+
+    // Initialize the page
+    document.addEventListener("DOMContentLoaded", function() {
+      console.log("DOM loaded, initializing...");
+      createSortControls();
+      createFilterControls();
+    });
+    </script>
+</body>
+</html> 
