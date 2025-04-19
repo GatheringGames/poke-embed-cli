@@ -399,10 +399,15 @@ canvas.poke-price-chart {
 .filter-checkbox-item {
   display: flex;
   align-items: center;
-  padding: 6px 0;
+  padding: 3px 0;
   cursor: pointer;
   text-align: left;
   justify-content: flex-start;
+}
+
+.filter-checkbox-item span {
+  display: flex;
+  align-items: center;
 }
 
 .filter-checkbox-item:hover {
