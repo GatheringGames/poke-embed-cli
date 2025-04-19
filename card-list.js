@@ -1338,7 +1338,8 @@ document.addEventListener("DOMContentLoaded", function() {
             (filterState.types.size < filterState.allTypes.size || 
             filterState.rarities.size < filterState.allRarities.size) ? 'block' : 'none';
         }
-      } else {
+      } 
+      else {
         // Fallback to the original method if placeholder doesn't exist
         const gridContainer = document.querySelector('.pokemon-set-list-grid');
         if (!gridContainer) return;
