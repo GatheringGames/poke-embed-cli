@@ -70,10 +70,18 @@ body {
 }
 
 .filter-type-icon {
-  height: 14px;
-  width: auto;
-  margin-right: 4px;
-  vertical-align: middle;
+  height: 14px !important;
+  width: 14px !important;
+  margin-right: 4px !important;
+  vertical-align: middle !important;
+  display: inline-block !important;
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  max-width: none !important;
+  min-width: 0 !important;
 }
 
 /* Card hiding for filters */
@@ -206,7 +214,7 @@ body {
           return `
             <label class="filter-checkbox-item">
               <input type="checkbox" value="${type}" data-filter-type="type" checked>
-              ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon" style="height:14px; width:auto; vertical-align:middle; margin-right:4px;">` : ''}
+              ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-width:none; min-width:0;">` : ''}
               ${type}
             </label>
           `;
