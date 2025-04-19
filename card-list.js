@@ -1232,6 +1232,11 @@ document.addEventListener("DOMContentLoaded", function() {
               <input type="checkbox" value="Trainer" data-filter-type="type" checked>
               Trainer
             </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Special Energy" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/colorless.svg" alt="Special Energy" class="filter-type-icon">
+              Special Energy
+            </label>
           </div>
         </div>
         <div class="filter-dropdown">
@@ -1277,7 +1282,8 @@ document.addEventListener("DOMContentLoaded", function() {
       // Set up filter state
       filterState.types = new Set([
         'Grass', 'Fire', 'Water', 'Lightning', 'Psychic', 
-        'Fighting', 'Darkness', 'Metal', 'Dragon', 'Colorless', 'Trainer'
+        'Fighting', 'Darkness', 'Metal', 'Dragon', 'Colorless', 
+        'Trainer', 'Special Energy'
       ]);
       filterState.allTypes = new Set(filterState.types);
       
