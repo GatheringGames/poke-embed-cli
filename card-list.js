@@ -1199,6 +1199,16 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
       }
       
+      // Collect all available rarities from cards on the page
+      const availableRarities = new Set();
+      document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
+        if (card.dataset.rarity) {
+          availableRarities.add(card.dataset.rarity);
+        }
+      });
+      
+      console.log("Available rarities found on page:", Array.from(availableRarities));
+      
       // Create minimal filter controls directly
       const filterControls = document.createElement('div');
       filterControls.className = 'pokemon-set-filter-controls';
@@ -1334,11 +1344,23 @@ document.addEventListener("DOMContentLoaded", function() {
       ]);
       filterState.allTypes = new Set(filterState.types);
       
+      // Add all available rarities found on the page
       filterState.rarities = new Set([
         'Common', 'Uncommon', 'Rare', 'Ultra Rare', 
         'Illustration Rare', 'Special Illustration Rare', 'Hyper Rare'
       ]);
+      
+      // Add any additional rarities found on the page
+      availableRarities.forEach(rarity => {
+        filterState.rarities.add(rarity);
+      });
+      
       filterState.allRarities = new Set(filterState.rarities);
+      
+      console.log("Initialized filter state with:", {
+        types: Array.from(filterState.types),
+        rarities: Array.from(filterState.rarities)
+      });
       
       // Toggle dropdowns
       document.getElementById('typeFilterButton').addEventListener('click', function(e) {
@@ -1371,7 +1393,18 @@ document.addEventListener("DOMContentLoaded", function() {
           if (this.checked) {
             filterState[filterType + 's'].add(value);
           } else {
-            filterState[filterType + 's'].delete(value);
+            // For rarity filter, need to handle case-insensitivity
+            if (filterType === 'rarity') {
+              // Remove from set (case-insensitive)
+              const valueToRemove = Array.from(filterState.rarities).find(
+                r => r.toLowerCase() === value.toLowerCase()
+              );
+              if (valueToRemove) {
+                filterState.rarities.delete(valueToRemove);
+              }
+            } else {
+              filterState[filterType + 's'].delete(value);
+            }
           }
           
           applyFilters();
@@ -1414,6 +1447,12 @@ document.addEventListener("DOMContentLoaded", function() {
           (filterState.types.size < filterState.allTypes.size || 
           filterState.rarities.size < filterState.allRarities.size) ? 'block' : 'none';
       }
+      
+      // Apply filters initially to ensure cards are shown/hidden properly
+      applyFilters();
+      
+      // Update filter buttons to reflect current state
+      updateFilterButtons();
     }
     
     // Function to apply the current filters
@@ -1447,8 +1486,14 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!typeMatch) showCard = false;
         
         // Check rarity filter - Only apply if type filter passed
-        if (showCard && cardRarity && !filterState.rarities.has(cardRarity)) {
-          showCard = false;
+        if (showCard && cardRarity) {
+          // Check if this card's rarity exists in the rarities set (case-insensitive)
+          const rarityExists = Array.from(filterState.rarities).some(
+            r => r.toLowerCase() === cardRarity.toLowerCase()
+          );
+          if (!rarityExists) {
+            showCard = false;
+          }
         }
         
         // Show or hide the card
@@ -1462,6 +1507,10 @@ document.addEventListener("DOMContentLoaded", function() {
         allTypes: Array.from(filterState.allTypes),
         allRarities: Array.from(filterState.allRarities)
       });
+      
+      // Log filtered cards for debugging
+      console.log('Visible cards:', document.querySelectorAll('.pokemon-set-list-card:not(.filtered-out)').length);
+      console.log('Hidden cards:', document.querySelectorAll('.pokemon-set-list-card.filtered-out').length);
     }
 
     console.log("End of initialization - filter controls should be created by now");
