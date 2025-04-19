@@ -393,7 +393,7 @@ canvas.poke-price-chart {
 }
 
 .filter-dropdown.show .filter-dropdown-content {
-  display: block;
+  display: block !important;
 }
 
 .filter-checkbox-item {
@@ -1383,14 +1383,35 @@ document.addEventListener("DOMContentLoaded", function() {
       // Toggle dropdowns
       document.getElementById('typeFilterButton').addEventListener('click', function(e) {
         e.stopPropagation();
-        document.getElementById('rarityFilterContent').parentElement.classList.remove('show');
+        // First hide the other dropdown
+        const rarityDropdown = document.getElementById('rarityFilterContent').parentElement;
+        rarityDropdown.classList.remove('show');
+        // Toggle this dropdown
         this.parentElement.classList.toggle('show');
+        
+        // Log dropdown state for debugging
+        console.log("Type filter dropdown toggled:", this.parentElement.classList.contains('show') ? 'visible' : 'hidden');
       });
       
       document.getElementById('rarityFilterButton').addEventListener('click', function(e) {
         e.stopPropagation();
-        document.getElementById('typeFilterContent').parentElement.classList.remove('show');
+        // First hide the other dropdown
+        const typeDropdown = document.getElementById('typeFilterContent').parentElement;
+        typeDropdown.classList.remove('show');
+        // Toggle this dropdown
         this.parentElement.classList.toggle('show');
+        
+        // Ensure the dropdown is properly visible when shown
+        if (this.parentElement.classList.contains('show')) {
+          const dropdown = document.getElementById('rarityFilterContent');
+          dropdown.style.display = 'block';
+          // Force a reflow to ensure CSS applies properly
+          void dropdown.offsetHeight;
+        }
+        
+        // Log dropdown state for debugging
+        console.log("Rarity filter dropdown toggled:", this.parentElement.classList.contains('show') ? 'visible' : 'hidden',
+          "Style:", document.getElementById('rarityFilterContent').style.display);
       });
       
       // Close dropdowns when clicking outside
@@ -1410,50 +1431,49 @@ document.addEventListener("DOMContentLoaded", function() {
           
           console.log(`Checkbox changed: ${value} (${filterType}) - checked: ${this.checked}`);
           
-          // Special case for Ultra Rare
-          if (value === 'Ultra Rare') {
-            console.log('Ultra Rare checkbox clicked - checked:', this.checked);
-            
+          if (filterType === 'rarity') {
+            // For rarity changes, we'll handle differently
             if (this.checked) {
-              // Direct check if it already exists to avoid duplicates
-              let exists = false;
-              filterState.rarities.forEach(r => {
-                if (r.toLowerCase() === value.toLowerCase()) exists = true;
-              });
-              
-              if (!exists) filterState.rarities.add(value);
+              // Add rarity to filter state
+              filterState.rarities.add(value);
+              console.log(`Added ${value} to rarities:`, Array.from(filterState.rarities));
             } else {
-              // Need to find and remove case-insensitively
-              filterState.rarities.forEach(r => {
-                if (r.toLowerCase() === value.toLowerCase()) {
-                  console.log('Removing Ultra Rare from filter state:', r);
-                  filterState.rarities.delete(r);
+              // Remove rarity from filter state (case-insensitive)
+              const valueToRemove = Array.from(filterState.rarities).find(
+                r => r.toLowerCase() === value.toLowerCase()
+              );
+              if (valueToRemove) {
+                filterState.rarities.delete(valueToRemove);
+                console.log(`Removed ${valueToRemove} from rarities:`, Array.from(filterState.rarities));
+                
+                // Forcefully hide cards with this rarity when unchecked
+                if (value.toLowerCase() === 'ultra rare'.toLowerCase()) {
+                  console.log('Special handling for Ultra Rare unchecking');
+                  const ultraRareCards = Array.from(document.querySelectorAll('.pokemon-set-list-card')).filter(
+                    card => card.dataset.rarity && card.dataset.rarity.toLowerCase() === 'ultra rare'.toLowerCase()
+                  );
+                  
+                  console.log(`Found ${ultraRareCards.length} Ultra Rare cards to hide`);
+                  ultraRareCards.forEach(card => {
+                    card.classList.add('filtered-out');
+                    console.log(`Hiding ${card.dataset.name} (${card.dataset.rarity})`);
+                  });
                 }
-              });
-            }
-            
-            console.log('Filter rarities after Ultra Rare change:', Array.from(filterState.rarities));
-          } else {
-            // Handle normal checkbox changes
-            if (this.checked) {
-              filterState[filterType + 's'].add(value);
-            } else {
-              // For rarity filter, need to handle case-insensitivity
-              if (filterType === 'rarity') {
-                // Remove from set (case-insensitive)
-                const valueToRemove = Array.from(filterState.rarities).find(
-                  r => r.toLowerCase() === value.toLowerCase()
-                );
-                if (valueToRemove) {
-                  filterState.rarities.delete(valueToRemove);
-                }
-              } else {
-                filterState[filterType + 's'].delete(value);
               }
+            }
+          } else if (filterType === 'type') {
+            // Type filter handling
+            if (this.checked) {
+              filterState.types.add(value);
+            } else {
+              filterState.types.delete(value);
             }
           }
           
+          // Apply filters to update the UI
           applyFilters();
+          
+          // Update filter button labels
           updateFilterButtons();
         });
       });
@@ -1514,19 +1534,8 @@ document.addEventListener("DOMContentLoaded", function() {
         Array.from(filterState.rarities).some(r => r.toLowerCase() === 'ultra rare'.toLowerCase())
       );
       
-      // Add character-by-character comparison for debugging
-      if (ultraRareCards.length > 0) {
-        const firstUltraRare = ultraRareCards[0];
-        const cardRarity = firstUltraRare.dataset.rarity;
-        console.log('Ultra Rare comparison:');
-        console.log('Card rarity:', JSON.stringify(cardRarity));
-        console.log('Expected:', JSON.stringify('Ultra Rare'));
-        console.log('Length comparison:', cardRarity.length, 'Ultra Rare'.length);
-        for (let i = 0; i < Math.max(cardRarity.length, 'Ultra Rare'.length); i++) {
-          console.log(`Char ${i}: ${cardRarity.charCodeAt(i) || 'N/A'} vs ${
-            'Ultra Rare'.charCodeAt(i) || 'N/A'}`);
-        }
-      }
+      // Log the current state of the filterState.rarities set for debugging
+      console.log('Current rarities in filter set:', Array.from(filterState.rarities));
       
       cards.forEach(card => {
         let showCard = true;
@@ -1561,7 +1570,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Check rarity filter - Only apply if type filter passed
         if (showCard && cardRarity) {
-          // Check if this card's rarity exists in the rarities set (case-insensitive)
+          // Case-insensitive rarity check
           const rarityExists = Array.from(filterState.rarities).some(
             r => r.toLowerCase() === cardRarity.toLowerCase()
           );
@@ -1569,16 +1578,23 @@ document.addEventListener("DOMContentLoaded", function() {
           // Extra debug for Ultra Rare cards
           if (cardRarity && cardRarity.toLowerCase() === 'ultra rare'.toLowerCase()) {
             console.log('Ultra Rare card rarity check:', rarityExists);
+            console.log('Card rarity:', cardRarity);
             console.log('Current rarities in filter:', Array.from(filterState.rarities));
-          }
-          
-          if (!rarityExists) {
+            
+            // Force handling for Ultra Rare cards to ensure they're properly hidden/shown
+            showCard = rarityExists;
+          } else if (!rarityExists) {
             showCard = false;
           }
         }
         
         // Show or hide the card
         card.classList.toggle('filtered-out', !showCard);
+        
+        // Force a reflow to ensure the card visibility updates immediately
+        if (cardRarity && cardRarity.toLowerCase() === 'ultra rare'.toLowerCase()) {
+          void card.offsetHeight;
+        }
       });
       
       // Log the current state for debugging

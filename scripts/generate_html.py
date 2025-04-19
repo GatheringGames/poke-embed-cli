@@ -3,17 +3,49 @@ import requests
 from pathlib import Path
 import os
 
-# Load cards from local JSON file in the assets directory
-with open(os.path.join("assets", "cards.json"), "r", encoding="utf-8") as f:
-    data = json.load(f)
+# Get the script directory and project root directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
 
-cards = data["data"]
+# Load cards from local JSON file in the assets directory
+cards_path = os.path.join(project_root, "assets", "cards.json")
+try:
+    with open(cards_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    cards = data["data"]
+except FileNotFoundError:
+    print(f"Error: Could not find cards.json at {cards_path}")
+    # Check if the assets directory exists
+    assets_dir = os.path.join(project_root, "assets")
+    if os.path.exists(assets_dir):
+        print(f"The assets directory exists at {assets_dir}")
+        print("Files in assets directory:")
+        for file in os.listdir(assets_dir):
+            print(f"  - {file}")
+    else:
+        print(f"The assets directory does not exist at {assets_dir}")
+    
+    # Create empty cards list as fallback
+    cards = []
 
 # Create output file in src directory
-output_path = Path(os.path.join("src", "journey_together_embed.html"))
+output_path = Path(os.path.join(project_root, "src", "journey_together_embed.html"))
 
 # Start HTML with a container for the whole experience
 html = '<div class="pokemon-set-container">'
+
+# Add a style tag to ensure filter dropdowns display correctly
+html += '''
+<style>
+  /* Fix for filter dropdown visibility */
+  .filter-dropdown.show .filter-dropdown-content {
+    display: block !important;
+  }
+  .filter-dropdown-content.active {
+    display: block !important;
+  }
+</style>
+'''
 
 # This div is where filter controls will be inserted by JavaScript
 html += '<div class="pokemon-set-filter-placeholder"></div>'
@@ -139,8 +171,11 @@ html += '''
 # Add the script tag to load the card-list.js file from src directory
 html += '<script src="card-list.js"></script>'
 
+# Create the src directory if it doesn't exist
+os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
 # Write to file
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(html)
 
-print(output_path.name)
+print(f"Generated HTML file at: {output_path}")
