@@ -1155,134 +1155,137 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Function to create filter controls
     function createFilterControls() {
-      console.log("Creating filter controls...");
+      console.log("Creating filter controls directly...");
       
-      // Find the grid container
+      // Get the grid container
       const gridContainer = document.querySelector('.pokemon-set-list-grid');
       if (!gridContainer) {
         console.error("Grid container not found, can't add filter controls");
         return;
       }
       
-      // Collect all types and rarities that exist in the data
-      const allTypes = new Set();
-      const allRarities = new Set();
-      
-      // Process all cards to get unique types and rarities
-      document.querySelectorAll('.pokemon-set-list-card').forEach(card => {
-        // Get rarity
-        const rarity = card.dataset.rarity;
-        if (rarity) allRarities.add(rarity);
-        
-        // Get types for Pokemon cards
-        const types = card.dataset.types ? card.dataset.types.split(', ') : [];
-        types.forEach(type => {
-          if (type) allTypes.add(type);
-        });
-        
-        // Add supertype for non-Pokemon cards
-        const supertype = card.dataset.supertype;
-        if (supertype === 'Trainer') {
-          allTypes.add('Trainer');
-        } else if (supertype === 'Energy') {
-          if (card.dataset.subtype === 'Special') {
-            allTypes.add('Special Energy');
-          } else {
-            // Regular energy uses its type
-            types.forEach(type => {
-              if (type) allTypes.add(type);
-            });
-          }
-        }
-      });
-      
-      console.log("All types collected:", Array.from(allTypes));
-      console.log("All rarities collected:", Array.from(allRarities));
-      
-      // Initialize filterState with all types and rarities
-      filterState.allTypes = new Set(allTypes);
-      filterState.allRarities = new Set(allRarities);
-      
-      // By default, all options are selected
-      filterState.types = new Set(allTypes);
-      filterState.rarities = new Set(allRarities);
-      
-      // Create filter controls container
-      const filterControls = document.createElement('div');
-      filterControls.className = 'pokemon-set-filter-controls';
-      
-      // Create type filter dropdown
-      const typeDropdown = document.createElement('div');
-      typeDropdown.className = 'filter-dropdown';
-      typeDropdown.innerHTML = `
-        <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
-        <div class="filter-dropdown-content" id="typeFilterContent">
-          ${Object.entries(TYPE_ICONS).map(([type, iconUrl]) => {
-            // Only include types that exist in our data
-            if (!allTypes.has(type)) return '';
-            
-            return `
-              <label class="filter-checkbox-item">
-                <input type="checkbox" value="${type}" data-filter-type="type" checked>
-                ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon">` : ''}
-                ${type}
-              </label>
-            `;
-          }).filter(html => html !== '').join('')}
-        </div>
-      `;
-      
-      // Create rarity filter dropdown
-      const rarityDropdown = document.createElement('div');
-      rarityDropdown.className = 'filter-dropdown';
-      rarityDropdown.innerHTML = `
-        <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
-        <div class="filter-dropdown-content" id="rarityFilterContent">
-          ${Array.from(allRarities)
-            // Sort by the predefined rarity order
-            .sort((a, b) => {
-              const orderA = RARITY_ORDER[a] || 999; // Default high value for unknown rarities
-              const orderB = RARITY_ORDER[b] || 999;
-              return orderA - orderB;
-            })
-            .map(rarity => {
-              const rarityIcon = `https://js.gatheringgames.co.uk/symbols/${rarity.toLowerCase().trim()}.svg`;
-              return `
-                <label class="filter-checkbox-item">
-                  <input type="checkbox" value="${rarity}" data-filter-type="rarity" checked>
-                  <img src="${rarityIcon}" alt="${rarity}" class="filter-rarity-icon">
-                  ${rarity}
-                </label>
-              `;
-            }).join('')}
-        </div>
-      `;
-      
-      // Create clear all filters button
-      const clearFiltersButton = document.createElement('button');
-      clearFiltersButton.className = 'filter-clear-all';
-      clearFiltersButton.textContent = 'Reset Filters';
-      clearFiltersButton.style.display = 'none'; // Hide initially
-      
-      // Add elements to the filter controls
-      filterControls.appendChild(typeDropdown);
-      filterControls.appendChild(rarityDropdown);
-      filterControls.appendChild(clearFiltersButton);
-      
-      // Try to find the filter placeholder first
-      const filterPlaceholder = document.querySelector('.pokemon-set-filter-placeholder');
-      
-      if (filterPlaceholder) {
-        // Replace the placeholder with our filter controls
-        console.log("Using filter placeholder path");
-        filterPlaceholder.replaceWith(filterControls);
-      } else {
-        // Insert before the grid as fallback
-        console.log("Using fallback path - inserting before grid");
-        gridContainer.parentNode.insertBefore(filterControls, gridContainer);
+      // Check if filter controls already exist
+      const existingControls = document.querySelector('.pokemon-set-filter-controls');
+      if (existingControls) {
+        console.log("Filter controls already exist - not creating again");
+        return;
       }
       
-      console.log("Filter controls HTML created and inserted into DOM");
+      // Create minimal filter controls directly
+      const filterControls = document.createElement('div');
+      filterControls.className = 'pokemon-set-filter-controls';
+      filterControls.innerHTML = `
+        <div class="filter-dropdown">
+          <button class="filter-dropdown-button" id="typeFilterButton">Card Type</button>
+          <div class="filter-dropdown-content" id="typeFilterContent">
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Grass" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/grass.svg" alt="Grass" class="filter-type-icon">
+              Grass
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Fire" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/fire.svg" alt="Fire" class="filter-type-icon">
+              Fire
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Water" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/water.svg" alt="Water" class="filter-type-icon">
+              Water
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Lightning" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/lightning.svg" alt="Lightning" class="filter-type-icon">
+              Lightning
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Psychic" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/psychic.svg" alt="Psychic" class="filter-type-icon">
+              Psychic
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Fighting" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/fighting.svg" alt="Fighting" class="filter-type-icon">
+              Fighting
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Darkness" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/darkness.svg" alt="Darkness" class="filter-type-icon">
+              Darkness
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Metal" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/metal.svg" alt="Metal" class="filter-type-icon">
+              Metal
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Dragon" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/dragon.svg" alt="Dragon" class="filter-type-icon">
+              Dragon
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Colorless" data-filter-type="type" checked>
+              <img src="https://js.gatheringgames.co.uk/symbols/colorless.svg" alt="Colorless" class="filter-type-icon">
+              Colorless
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Trainer" data-filter-type="type" checked>
+              Trainer
+            </label>
+          </div>
+        </div>
+        <div class="filter-dropdown">
+          <button class="filter-dropdown-button" id="rarityFilterButton">Rarity</button>
+          <div class="filter-dropdown-content" id="rarityFilterContent">
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Common" data-filter-type="rarity" checked>
+              Common
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Uncommon" data-filter-type="rarity" checked>
+              Uncommon
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Rare" data-filter-type="rarity" checked>
+              Rare
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Ultra Rare" data-filter-type="rarity" checked>
+              Ultra Rare
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Illustration Rare" data-filter-type="rarity" checked>
+              Illustration Rare
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Special Illustration Rare" data-filter-type="rarity" checked>
+              Special Illustration Rare
+            </label>
+            <label class="filter-checkbox-item">
+              <input type="checkbox" value="Hyper Rare" data-filter-type="rarity" checked>
+              Hyper Rare
+            </label>
+          </div>
+        </div>
+        <button class="filter-clear-all" style="display:none">Reset Filters</button>
+      `;
+      
+      // Insert directly before the grid
+      gridContainer.parentNode.insertBefore(filterControls, gridContainer);
+      console.log("Filter controls created and inserted");
+      
+      // Set up filter state
+      filterState.types = new Set([
+        'Grass', 'Fire', 'Water', 'Lightning', 'Psychic', 
+        'Fighting', 'Darkness', 'Metal', 'Dragon', 'Colorless', 'Trainer'
+      ]);
+      filterState.allTypes = new Set(filterState.types);
+      
+      filterState.rarities = new Set([
+        'Common', 'Uncommon', 'Rare', 'Ultra Rare', 
+        'Illustration Rare', 'Special Illustration Rare', 'Hyper Rare'
+      ]);
+      filterState.allRarities = new Set(filterState.rarities);
       
       // Toggle dropdowns
       document.getElementById('typeFilterButton').addEventListener('click', function(e) {
@@ -1324,7 +1327,7 @@ document.addEventListener("DOMContentLoaded", function() {
       });
       
       // Reset all filters
-      clearFiltersButton.addEventListener('click', function() {
+      document.querySelector('.filter-clear-all').addEventListener('click', function() {
         // Reset to all filters selected
         filterState.types = new Set(filterState.allTypes);
         filterState.rarities = new Set(filterState.allRarities);
@@ -1342,6 +1345,7 @@ document.addEventListener("DOMContentLoaded", function() {
       function updateFilterButtons() {
         const typeButton = document.getElementById('typeFilterButton');
         const rarityButton = document.getElementById('rarityFilterButton');
+        const clearFiltersButton = document.querySelector('.filter-clear-all');
         
         // Count deselected items instead of selected ones
         const typeCount = filterState.allTypes.size - filterState.types.size;
