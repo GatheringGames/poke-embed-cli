@@ -619,7 +619,7 @@ document.addEventListener("DOMContentLoaded", function() {
       
       // Only include the ability section if both abilityName and abilityText are present
       const abilityInfo = (abilityName && abilityText) 
-        ? `<div class="poke-ability"><strong>Ability: ${abilityName}</strong><br>${abilityText}</div>`
+        ? `<div class="poke-ability"><strong style="color: #d8232f;">Ability: ${abilityName}</strong><br>${abilityText}</div>`
         : "";
         
       // Only show rules text if it's not empty and it's not for Pokémon cards
