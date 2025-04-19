@@ -399,15 +399,18 @@ canvas.poke-price-chart {
 .filter-checkbox-item {
   display: flex;
   align-items: center;
-  padding: 3px 0;
+  padding: 2px 0;
   cursor: pointer;
   text-align: left;
   justify-content: flex-start;
+  height: 22px;
 }
 
 .filter-checkbox-item span {
   display: flex;
   align-items: center;
+  height: 18px;
+  line-height: 18px;
 }
 
 .filter-checkbox-item:hover {
@@ -433,6 +436,8 @@ canvas.poke-price-chart {
   max-width: none !important;
   min-width: 0 !important;
   flex-shrink: 0;
+  max-height: 14px !important;
+  min-height: 14px !important;
 }
 
 .filter-applied {
@@ -1204,70 +1209,70 @@ document.addEventListener("DOMContentLoaded", function() {
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Grass" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/grass.svg" alt="Grass" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/grass.svg" alt="Grass" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Grass
               </span>
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Fire" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/fire.svg" alt="Fire" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/fire.svg" alt="Fire" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Fire
               </span>
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Water" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/water.svg" alt="Water" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/water.svg" alt="Water" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Water
               </span>
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Lightning" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/lightning.svg" alt="Lightning" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/lightning.svg" alt="Lightning" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Lightning
               </span>
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Psychic" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/psychic.svg" alt="Psychic" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/psychic.svg" alt="Psychic" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Psychic
               </span>
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Fighting" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/fighting.svg" alt="Fighting" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/fighting.svg" alt="Fighting" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Fighting
               </span>
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Darkness" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/darkness.svg" alt="Darkness" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/darkness.svg" alt="Darkness" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Darkness
               </span>
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Metal" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/metal.svg" alt="Metal" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/metal.svg" alt="Metal" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Metal
               </span>
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Dragon" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/dragon.svg" alt="Dragon" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/dragon.svg" alt="Dragon" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Dragon
               </span>
             </label>
             <label class="filter-checkbox-item">
               <input type="checkbox" value="Colorless" data-filter-type="type" checked>
               <span>
-                <img src="https://js.gatheringgames.co.uk/symbols/colorless.svg" alt="Colorless" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block;">
+                <img src="https://js.gatheringgames.co.uk/symbols/colorless.svg" alt="Colorless" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;">
                 Colorless
               </span>
             </label>

@@ -83,6 +83,8 @@ body {
   max-width: none !important;
   min-width: 0 !important;
   flex-shrink: 0;
+  max-height: 14px !important;
+  min-height: 14px !important;
 }
 
 /* Card hiding for filters */
@@ -93,15 +95,18 @@ body {
 .filter-checkbox-item {
   display: flex;
   align-items: center;
-  padding: 3px 0;
+  padding: 2px 0;
   cursor: pointer;
   text-align: left;
   justify-content: flex-start;
+  height: 22px;
 }
 
 .filter-checkbox-item span {
   display: flex;
   align-items: center;
+  height: 18px;
+  line-height: 18px;
 }
 
 .filter-checkbox-item:hover {
@@ -239,7 +244,7 @@ body {
             <label class="filter-checkbox-item">
               <input type="checkbox" value="${type}" data-filter-type="type" checked>
               <span>
-                ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-width:none; min-width:0;">` : ''}
+                ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-width:none; min-width:0; max-height:14px; min-height:14px;">` : ''}
                 ${type}
               </span>
             </label>
