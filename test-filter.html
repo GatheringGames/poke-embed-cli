@@ -118,6 +118,7 @@ body {
 
 .filter-checkbox-item input {
   margin-right: 8px;
+  flex-shrink: 0;
 }
 
 .filter-type-icon, .filter-rarity-icon {
@@ -133,6 +134,7 @@ body {
   border-radius: 0 !important;
   max-width: none !important;
   min-width: 0 !important;
+  flex-shrink: 0;
 }
 
 /* Sort controls styles */
@@ -425,8 +427,10 @@ body {
               return `
                 <label class="filter-checkbox-item">
                   <input type="checkbox" value="${type}" data-filter-type="type" checked>
-                  ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon" style="height:14px; width:auto; vertical-align:middle; margin-right:4px;">` : ''}
-                  ${type}
+                  <span>
+                    ${iconUrl ? `<img src="${iconUrl}" alt="${type}" class="filter-type-icon" style="height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-width:none; min-width:0;">` : ''}
+                    ${type}
+                  </span>
                 </label>
               `;
             }).filter(html => html !== '').join('')}
