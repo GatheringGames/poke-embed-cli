@@ -1319,31 +1319,45 @@ document.addEventListener("DOMContentLoaded", function() {
       // Add rarity checkboxes
       const rarityContent = document.getElementById('rarityFilterContent');
       const rarityOptions = [
-        'Common',
-        'Uncommon',
-        'Rare',
-        'Double Rare',
-        'Ultra Rare',
-        'Illustration Rare',
-        'Special Illustration Rare',
-        'Hyper Rare'
+        { value: 'Common', icon: 'https://js.gatheringgames.co.uk/assets/symbols/common.svg' },
+        { value: 'Uncommon', icon: 'https://js.gatheringgames.co.uk/assets/symbols/uncommon.svg' },
+        { value: 'Rare', icon: 'https://js.gatheringgames.co.uk/assets/symbols/rare.svg' },
+        { value: 'Double Rare', icon: 'https://js.gatheringgames.co.uk/assets/symbols/double rare.svg' },
+        { value: 'Ultra Rare', icon: 'https://js.gatheringgames.co.uk/assets/symbols/ultra rare.svg' },
+        { value: 'Illustration Rare', icon: 'https://js.gatheringgames.co.uk/assets/symbols/illustration rare.svg' },
+        { value: 'Special Illustration Rare', icon: 'https://js.gatheringgames.co.uk/assets/symbols/special illustration rare.svg' },
+        { value: 'Hyper Rare', icon: 'https://js.gatheringgames.co.uk/assets/symbols/hyper rare.svg' }
       ];
       
-      rarityOptions.forEach(rarity => {
+      rarityOptions.forEach(option => {
         const label = document.createElement('label');
         label.className = 'filter-checkbox-item';
         label.style = 'display: flex; align-items: center; padding: 2px 0; cursor: pointer; text-align: left; justify-content: flex-start; height: 22px;';
         
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.value = rarity;
+        checkbox.value = option.value;
         checkbox.className = 'rarity-filter';
         checkbox.dataset.filterType = 'rarity';
         checkbox.checked = true;
         checkbox.style = 'margin-right: 8px; flex-shrink: 0;';
         
         label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(rarity));
+        
+        const span = document.createElement('span');
+        span.style = 'display: flex; align-items: center; height: 18px; line-height: 18px;';
+        
+        if (option.icon) {
+          const img = document.createElement('img');
+          img.src = option.icon;
+          img.alt = option.value;
+          img.className = 'filter-rarity-icon';
+          img.style = 'height:14px; width:14px; vertical-align:middle; margin-right:4px; background:none; box-shadow:none; border:none; padding:0; border-radius:0; display:inline-block; max-height:14px; min-height:14px;';
+          span.appendChild(img);
+        }
+        
+        span.appendChild(document.createTextNode(option.value));
+        label.appendChild(span);
         rarityContent.appendChild(label);
       });
       
