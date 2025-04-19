@@ -55,8 +55,7 @@ body {
   display: none;
   position: absolute;
   background-color: white;
-  min-width: 250px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   z-index: 1;
   padding: 10px;
   border-radius: 4px;
@@ -68,6 +67,13 @@ body {
 
 .filter-dropdown.show .filter-dropdown-content {
   display: block;
+}
+
+.filter-type-icon {
+  height: 16px;
+  width: 16px;
+  margin-right: 5px;
+  vertical-align: middle;
 }
 
 /* Card hiding for filters */
